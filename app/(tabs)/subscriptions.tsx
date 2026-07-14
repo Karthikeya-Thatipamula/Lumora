@@ -25,7 +25,7 @@ const Subscriptions = () => {
             timestamp: new Date().toISOString(),
         });
         console.info('[Analytics] Subscriptions screen viewed');
-    }, [isLoading]);
+    }, [isLoading, posthog, subscriptions.length]);
 
     const filteredSubscriptions = subscriptions.filter((subscription) =>
         subscription.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -41,7 +41,7 @@ const Subscriptions = () => {
                 timestamp: new Date().toISOString(),
             });
         }
-    }, [searchQuery]);
+    }, [searchQuery, filteredSubscriptions.length, posthog]);
 
     const handleSubscriptionPress = (id: string) => {
         const isExpanding = expandedId !== id;

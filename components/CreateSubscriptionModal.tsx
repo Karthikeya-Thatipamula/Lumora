@@ -26,7 +26,7 @@ export interface SubscriptionFormValues {
 interface CreateSubscriptionModalProps {
     visible: boolean;
     onClose: () => void;
-    onSubmit: (values: SubscriptionFormValues) => void;
+    onSubmit: (values: SubscriptionFormValues) => void | Promise<void>;
     initialValues?: SubscriptionFormValues;
     mode?: 'create' | 'edit';
 }
@@ -37,6 +37,7 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit, initialValues, mo
     const [price, setPrice] = useState(initialValues ? String(initialValues.price) : '');
     const [frequency, setFrequency] = useState<Frequency>(initialValues?.frequency ?? 'Monthly');
     const [category, setCategory] = useState<Category>(initialValues?.category ?? 'Other');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Reset the form to the current initialValues whenever the modal opens
     useEffect(() => {
@@ -46,7 +47,7 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit, initialValues, mo
             setFrequency(initialValues?.frequency ?? 'Monthly');
             setCategory(initialValues?.category ?? 'Other');
         }
-    }, [visible]);
+    }, [visible, initialValues]);
 
     // Improved price validation
     const isValidPrice = () => {
@@ -60,22 +61,28 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit, initialValues, mo
 
     const isValidForm = name.trim() !== '' && isValidPrice();
 
-    const handleSubmit = () => {
-        if (!isValidForm) return;
+    const handleSubmit = async () => {
+        if (!isValidForm || isSubmitting) return;
 
+        const trimmedName = name.trim();
         const priceValue = Number(price.trim());
 
-        onSubmit({ name: name.trim(), price: priceValue, frequency, category });
+        setIsSubmitting(true);
+        try {
+            await onSubmit({ name: trimmedName, price: priceValue, frequency, category });
 
-        posthog.capture(mode === 'create' ? 'subscription_created' : 'subscription_edited', {
-            subscription_name: name.trim(),
-            subscription_price: priceValue,
-            subscription_frequency: frequency,
-            subscription_category: category,
-        })
+            posthog.capture(mode === 'create' ? 'subscription_created' : 'subscription_edited', {
+                subscription_name: trimmedName,
+                subscription_price: priceValue,
+                subscription_frequency: frequency,
+                subscription_category: category,
+            });
 
-        if (mode === 'create') resetForm();
-        onClose();
+            if (mode === 'create') resetForm();
+            onClose();
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const resetForm = () => {
@@ -180,13 +187,13 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit, initialValues, mo
                             </View>
 
                             <Pressable
-                                className={clsx('auth-button', !isValidForm && 'auth-button-disabled')}
+                                className={clsx('auth-button', (!isValidForm || isSubmitting) && 'auth-button-disabled')}
                                 onPress={handleSubmit}
-                                disabled={!isValidForm}
+                                disabled={!isValidForm || isSubmitting}
                                 accessibilityRole="button"
                                 accessibilityLabel={mode === 'create' ? 'Create subscription' : 'Save changes'}
                             >
-                                <Text className="auth-button-text">{mode === 'create' ? 'Create Subscription' : 'Save Changes'}</Text>
+                                <Text className="auth-button-text">{isSubmitting ? 'Saving...' : mode === 'create' ? 'Create Subscription' : 'Save Changes'}</Text>
                             </Pressable>
                         </ScrollView>
                     </Pressable>
