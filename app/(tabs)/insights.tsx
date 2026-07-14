@@ -38,7 +38,7 @@ const Insights = () => {
         posthog.capture('insights_screen_viewed', {
             total_subscriptions: subscriptions.length,
         });
-    }, [isLoading]);
+    }, [isLoading, posthog, subscriptions.length]);
 
     const monthlySpend = useMemo(() => getMonthlySpend(subscriptions), [subscriptions]);
     const yearlySpend = useMemo(() => getYearlySpend(subscriptions), [subscriptions]);

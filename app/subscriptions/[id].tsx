@@ -1,6 +1,6 @@
 import CreateSubscriptionModal, { Category, Frequency, SubscriptionFormValues } from '@/components/CreateSubscriptionModal';
 import SubscriptionAvatar from '@/components/SubscriptionAvatar';
-import { confirmDialog } from '@/lib/dialogs';
+import { alertDialog, confirmDialog } from '@/lib/dialogs';
 import { safeBack } from '@/lib/navigation';
 import { formatCurrency, formatStatusLabel, formatSubscriptionDateTime } from '@/lib/utils';
 import { useSubscription, useSubscriptions } from '@/lib/useSubscriptions';
@@ -47,8 +47,13 @@ const SubscriptionDetails = () => {
 
     const handleTogglePause = async () => {
         const nextStatus = isPaused ? 'active' : 'paused';
-        await setSubscriptionStatus(subscription.id, nextStatus);
-        posthog.capture(isPaused ? 'subscription_resumed' : 'subscription_paused', { subscription_id: subscription.id });
+        try {
+            await setSubscriptionStatus(subscription.id, nextStatus);
+            posthog.capture(isPaused ? 'subscription_resumed' : 'subscription_paused', { subscription_id: subscription.id });
+        } catch (error) {
+            console.error('Update subscription status failed:', error);
+            alertDialog('Update failed', 'Please try again once your account is fully loaded.');
+        }
     };
 
     const handleCancel = async () => {
@@ -61,8 +66,13 @@ const SubscriptionDetails = () => {
         });
         if (!confirmed) return;
 
-        await setSubscriptionStatus(subscription.id, 'cancelled');
-        posthog.capture('subscription_cancelled', { subscription_id: subscription.id });
+        try {
+            await setSubscriptionStatus(subscription.id, 'cancelled');
+            posthog.capture('subscription_cancelled', { subscription_id: subscription.id });
+        } catch (error) {
+            console.error('Cancel subscription failed:', error);
+            alertDialog('Cancel failed', 'Please try again once your account is fully loaded.');
+        }
     };
 
     const handleDelete = async () => {
@@ -74,13 +84,24 @@ const SubscriptionDetails = () => {
         });
         if (!confirmed) return;
 
-        await deleteSubscription(subscription.id);
-        posthog.capture('subscription_deleted', { subscription_id: subscription.id });
-        safeBack(router, '/(tabs)/subscriptions');
+        try {
+            await deleteSubscription(subscription.id);
+            posthog.capture('subscription_deleted', { subscription_id: subscription.id });
+            safeBack(router, '/(tabs)/subscriptions');
+        } catch (error) {
+            console.error('Delete subscription failed:', error);
+            alertDialog('Delete failed', 'Please try again once your account is fully loaded.');
+        }
     };
 
     const handleEditSubmit = async (values: SubscriptionFormValues) => {
-        await updateSubscription(subscription.id, values);
+        try {
+            await updateSubscription(subscription.id, values);
+        } catch (error) {
+            console.error('Update subscription failed:', error);
+            alertDialog('Update failed', 'Please try again once your account is fully loaded.');
+            throw error;
+        }
     };
 
     return (

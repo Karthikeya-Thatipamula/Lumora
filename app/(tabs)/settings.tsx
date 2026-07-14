@@ -32,7 +32,7 @@ const Settings = () => {
             timestamp: new Date().toISOString(),
         });
         console.info('[Analytics] Settings screen viewed');
-    }, []);
+    }, [posthog]);
 
     const handleSignOut = async () => {
         try {
@@ -78,7 +78,10 @@ const Settings = () => {
                 return;
             }
         }
-        updateSettings({ notificationsEnabled: enabled });
+        updateSettings({ notificationsEnabled: enabled }).catch((error) => {
+            console.error('Update notification setting failed:', error);
+            alertDialog('Settings not saved', 'Please try again once your account is fully loaded.');
+        });
         posthog.capture('notifications_toggled', { enabled });
     };
 
@@ -178,7 +181,10 @@ const Settings = () => {
                                 <Pressable
                                     key={days}
                                     className={clsx('flex-1 items-center rounded-2xl border border-border py-2', reminderDaysBefore === days && 'border-accent bg-accent/10')}
-                                    onPress={() => updateSettings({ reminderDaysBefore: days })}
+                                    onPress={() => updateSettings({ reminderDaysBefore: days }).catch((error) => {
+                                        console.error('Update reminder setting failed:', error);
+                                        alertDialog('Settings not saved', 'Please try again once your account is fully loaded.');
+                                    })}
                                     accessibilityRole="button"
                                     accessibilityLabel={`Remind me ${days} days before renewal`}
                                 >

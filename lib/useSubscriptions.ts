@@ -3,6 +3,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { logConvexQueryError } from "@/lib/convexErrors";
 import { cancelReminder } from "@/lib/notifications";
+import { useAuth } from "@clerk/expo";
 import { useConvex, useMutation } from "convex/react";
 import dayjs from "dayjs";
 import { useCallback, useEffect, useState } from "react";
@@ -32,6 +33,7 @@ function mapSubscription(doc: NonNullable<Awaited<ReturnType<ReturnType<typeof u
 }
 
 export function useSubscription(id: string | undefined) {
+    const { isLoaded, isSignedIn } = useAuth();
     const convex = useConvex();
     const [subscription, setSubscription] = useState<Subscription | null>(null);
     const [isLoading, setIsLoading] = useState(Boolean(id));
@@ -39,9 +41,9 @@ export function useSubscription(id: string | undefined) {
     useEffect(() => {
         let isMounted = true;
 
-        if (!id) {
+        if (!id || !isLoaded || !isSignedIn) {
             setSubscription(null);
-            setIsLoading(false);
+            setIsLoading(Boolean(id) && !isLoaded);
             return;
         }
 
@@ -62,12 +64,13 @@ export function useSubscription(id: string | undefined) {
         return () => {
             isMounted = false;
         };
-    }, [convex, id]);
+    }, [convex, id, isLoaded, isSignedIn]);
 
     return { subscription, isLoading };
 }
 
 export function useSubscriptions() {
+    const { isLoaded, isSignedIn } = useAuth();
     const convex = useConvex();
     const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -83,6 +86,12 @@ export function useSubscriptions() {
 
     useEffect(() => {
         let isMounted = true;
+
+        if (!isLoaded || !isSignedIn) {
+            setSubscriptions([]);
+            setIsLoading(!isLoaded);
+            return;
+        }
 
         setIsLoading(true);
         convex
@@ -101,9 +110,16 @@ export function useSubscriptions() {
         return () => {
             isMounted = false;
         };
-    }, [convex, refreshToken]);
+    }, [convex, refreshToken, isLoaded, isSignedIn]);
+
+    const assertAuthenticated = () => {
+        if (!isLoaded || !isSignedIn) {
+            throw new Error("Please sign in before managing subscriptions.");
+        }
+    };
 
     const createSubscription = async (values: SubscriptionFormValues) => {
+        assertAuthenticated();
         const now = dayjs();
         const result = await createMutation({
             name: values.name,
@@ -121,6 +137,7 @@ export function useSubscriptions() {
     };
 
     const updateSubscription = async (id: string, values: SubscriptionFormValues) => {
+        assertAuthenticated();
         const result = await updateMutation({
             id: id as Id<"subscriptions">,
             name: values.name,
@@ -134,12 +151,14 @@ export function useSubscriptions() {
     };
 
     const setSubscriptionStatus = async (id: string, status: "active" | "paused" | "cancelled") => {
+        assertAuthenticated();
         const result = await setStatusMutation({ id: id as Id<"subscriptions">, status });
         refreshSubscriptions();
         return result;
     };
 
     const deleteSubscription = async (id: string) => {
+        assertAuthenticated();
         await cancelReminder(id);
         const result = await removeMutation({ id: id as Id<"subscriptions"> });
         refreshSubscriptions();

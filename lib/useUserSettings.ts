@@ -1,5 +1,6 @@
 import { api } from "@/convex/_generated/api";
 import { logConvexQueryError } from "@/lib/convexErrors";
+import { useAuth } from "@clerk/expo";
 import { useConvex, useMutation } from "convex/react";
 import { useCallback, useEffect, useState } from "react";
 
@@ -10,6 +11,7 @@ type UserSettingsPatch = {
 };
 
 export function useUserSettings() {
+    const { isLoaded, isSignedIn } = useAuth();
     const convex = useConvex();
     const updateMutation = useMutation(api.userSettings.update);
     const [settings, setSettings] = useState<UserSettingsPatch | null>(null);
@@ -22,6 +24,12 @@ export function useUserSettings() {
 
     useEffect(() => {
         let isMounted = true;
+
+        if (!isLoaded || !isSignedIn) {
+            setSettings(null);
+            setIsLoading(!isLoaded);
+            return;
+        }
 
         setIsLoading(true);
         convex
@@ -40,9 +48,12 @@ export function useUserSettings() {
         return () => {
             isMounted = false;
         };
-    }, [convex, refreshToken]);
+    }, [convex, refreshToken, isLoaded, isSignedIn]);
 
     const updateSettings = async (patch: UserSettingsPatch) => {
+        if (!isLoaded || !isSignedIn) {
+            throw new Error("Please sign in before updating settings.");
+        }
         setSettings((current) => ({ ...(current ?? {}), ...patch }));
         const result = await updateMutation(patch);
         refreshSettings();

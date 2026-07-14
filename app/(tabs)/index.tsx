@@ -5,7 +5,7 @@ import UpcomingSubscriptionCard from "@/components/UpcomingSubscriptionCard";
 import { icons } from "@/constants/icons";
 import images from "@/constants/images";
 import "@/global.css";
-import { confirmDialog } from "@/lib/dialogs";
+import { alertDialog, confirmDialog } from "@/lib/dialogs";
 import { getNextRenewal, getUpcomingRenewals } from "@/lib/insights";
 import { FREE_SUBSCRIPTION_LIMIT } from "@/lib/purchases";
 import { useProStatus } from "@/lib/useProStatus";
@@ -37,7 +37,7 @@ export default function App() {
             total_subscriptions: subscriptions.length,
             active_subscriptions: subscriptions.filter(s => s.status === 'active').length,
         });
-    }, [isLoading]);
+    }, [isLoading, posthog, subscriptions]);
 
     const upcomingSubscriptions = useMemo(() => getUpcomingRenewals(subscriptions, 7), [subscriptions]);
     const nextRenewal = useMemo(() => getNextRenewal(subscriptions), [subscriptions]);
@@ -62,6 +62,8 @@ export default function App() {
             posthog.capture('subscription_creation_failed', {
                 error_message: error instanceof Error ? error.message : 'Unknown error',
             });
+            alertDialog('Subscription not saved', 'Please try again once your account is fully loaded.');
+            throw error;
         }
     };
 
