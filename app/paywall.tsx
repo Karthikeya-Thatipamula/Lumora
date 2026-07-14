@@ -1,3 +1,4 @@
+import { safeBack } from '@/lib/navigation';
 import { isPurchasesConfigured } from '@/lib/purchases';
 import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
@@ -17,7 +18,7 @@ export default function Paywall() {
                 <Text className="text-center text-sm font-sans-medium text-muted-foreground">
                     This build doesn&apos;t have RevenueCat configured, so there&apos;s nothing to purchase yet.
                 </Text>
-                <Pressable className="auth-button px-8" onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Close">
+                <Pressable className="auth-button px-8" onPress={() => safeBack(router)} accessibilityRole="button" accessibilityLabel="Close">
                     <Text className="auth-button-text">Close</Text>
                 </Pressable>
             </SafeAreaView>
@@ -26,14 +27,14 @@ export default function Paywall() {
 
     return (
         <RevenueCatUI.Paywall
-            onDismiss={() => router.back()}
+            onDismiss={() => safeBack(router)}
             onPurchaseCompleted={() => {
                 posthog.capture('pro_purchase_completed');
-                router.back();
+                safeBack(router);
             }}
             onRestoreCompleted={({ customerInfo }) => {
                 posthog.capture('pro_restore_completed', { has_entitlements: Object.keys(customerInfo.entitlements.active).length > 0 });
-                router.back();
+                safeBack(router);
             }}
         />
     );
