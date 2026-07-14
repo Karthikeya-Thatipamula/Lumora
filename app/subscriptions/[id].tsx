@@ -1,6 +1,7 @@
 import CreateSubscriptionModal, { Category, Frequency, SubscriptionFormValues } from '@/components/CreateSubscriptionModal';
 import SubscriptionAvatar from '@/components/SubscriptionAvatar';
 import { confirmDialog } from '@/lib/dialogs';
+import { safeBack } from '@/lib/navigation';
 import { formatCurrency, formatStatusLabel, formatSubscriptionDateTime } from '@/lib/utils';
 import { useSubscription, useSubscriptions } from '@/lib/useSubscriptions';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
@@ -75,7 +76,7 @@ const SubscriptionDetails = () => {
 
         await deleteSubscription(subscription.id);
         posthog.capture('subscription_deleted', { subscription_id: subscription.id });
-        router.back();
+        safeBack(router, '/(tabs)/subscriptions');
     };
 
     const handleEditSubmit = async (values: SubscriptionFormValues) => {
@@ -86,7 +87,7 @@ const SubscriptionDetails = () => {
         <SafeAreaView className="flex-1 bg-background" edges={['top']}>
             <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false}>
                 <View className="mb-6 flex-row items-center justify-between">
-                    <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back" hitSlop={12}>
+                    <Pressable onPress={() => safeBack(router, '/(tabs)/subscriptions')} accessibilityRole="button" accessibilityLabel="Go back" hitSlop={12}>
                         <Text className="text-2xl text-primary">‹</Text>
                     </Pressable>
                     <Text className="text-lg font-sans-bold text-primary">Details</Text>
