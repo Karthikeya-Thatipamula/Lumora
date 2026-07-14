@@ -1,23 +1,41 @@
 import { formatCurrency } from '@/lib/utils';
+import Constants from 'expo-constants';
 import dayjs from 'dayjs';
-import * as Notifications from 'expo-notifications';
+import type * as ExpoNotifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
-// expo-notifications' scheduling APIs aren't implemented on web — every exported
-// function no-ops there, and none may reject: cancelReminder sits in the delete
-// flow, and a notification failure must never block a data operation.
-const isSupported = Platform.OS !== 'web';
+type NotificationsModule = typeof ExpoNotifications;
 
-if (isSupported) {
-    Notifications.setNotificationHandler({
-        handleNotification: async () => ({
-            shouldShowAlert: true,
-            shouldPlaySound: false,
-            shouldSetBadge: false,
-            shouldShowBanner: true,
-            shouldShowList: true,
-        }),
+// expo-notifications' scheduling APIs aren't implemented on web. Android push
+// APIs are also unavailable in Expo Go as of SDK 53+, and importing the module
+// there triggers Expo's remote-notification warning before app code can opt out.
+const isExpoGoAndroid = Platform.OS === 'android' && Constants.appOwnership === 'expo';
+const isSupported = Platform.OS !== 'web' && !isExpoGoAndroid;
+
+let notificationsPromise: Promise<NotificationsModule | null> | null = null;
+let notificationHandlerConfigured = false;
+
+async function getNotifications(): Promise<NotificationsModule | null> {
+    if (!isSupported) return null;
+
+    notificationsPromise ??= import('expo-notifications').then((module) => {
+        if (!notificationHandlerConfigured) {
+            module.setNotificationHandler({
+                handleNotification: async () => ({
+                    shouldShowAlert: true,
+                    shouldPlaySound: false,
+                    shouldSetBadge: false,
+                    shouldShowBanner: true,
+                    shouldShowList: true,
+                }),
+            });
+            notificationHandlerConfigured = true;
+        }
+
+        return module;
     });
+
+    return notificationsPromise;
 }
 
 function reminderIdentifier(subscriptionId: string): string {
@@ -25,7 +43,8 @@ function reminderIdentifier(subscriptionId: string): string {
 }
 
 export async function ensureNotificationPermission(): Promise<boolean> {
-    if (!isSupported) return false;
+    const Notifications = await getNotifications();
+    if (!Notifications) return false;
 
     try {
         const { status: existingStatus } = await Notifications.getPermissionsAsync();
@@ -41,7 +60,8 @@ export async function ensureNotificationPermission(): Promise<boolean> {
 
 /** Schedules (or reschedules) a single local reminder for a subscription's next renewal. */
 export async function scheduleRenewalReminder(subscription: Subscription, daysBefore: number): Promise<void> {
-    if (!isSupported) return;
+    const Notifications = await getNotifications();
+    if (!Notifications) return;
 
     await cancelReminder(subscription.id);
 
@@ -72,7 +92,8 @@ export async function scheduleRenewalReminder(subscription: Subscription, daysBe
 }
 
 export async function cancelReminder(subscriptionId: string): Promise<void> {
-    if (!isSupported) return;
+    const Notifications = await getNotifications();
+    if (!Notifications) return;
 
     try {
         await Notifications.cancelScheduledNotificationAsync(reminderIdentifier(subscriptionId));

@@ -1,3 +1,4 @@
+import { safeBack } from '@/lib/navigation';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,7 +9,7 @@ const Terms = () => {
     return (
         <SafeAreaView className="flex-1 bg-background">
             <View className="flex-row items-center justify-between px-5 py-4">
-                <Pressable onPress={() => router.back()} accessibilityRole="button" accessibilityLabel="Go back" hitSlop={12}>
+                <Pressable onPress={() => safeBack(router, '/(tabs)/settings')} accessibilityRole="button" accessibilityLabel="Go back" hitSlop={12}>
                     <Text className="text-2xl text-primary">‹</Text>
                 </Pressable>
                 <Text className="text-lg font-sans-bold text-primary">Terms of Use</Text>
