@@ -14,7 +14,25 @@ import { ScrollView, Text, View } from "react-native";
 SplashScreen.preventAutoHideAsync();
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
-const convexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
+const rawConvexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
+const convexUrl = normalizeConvexUrl(rawConvexUrl);
+
+function normalizeConvexUrl(value: string | undefined) {
+  if (!value) return undefined;
+
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  try {
+    const url = new URL(trimmed);
+    url.pathname = '';
+    url.search = '';
+    url.hash = '';
+    return url.toString().replace(/\/$/, '');
+  } catch {
+    return trimmed;
+  }
+}
 
 const missingConfig: { name: string; fix: string }[] = [
   ...(!publishableKey

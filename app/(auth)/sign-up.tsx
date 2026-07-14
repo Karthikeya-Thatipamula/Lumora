@@ -1,3 +1,4 @@
+import { getClerkErrorMessage } from '@/lib/clerkErrors';
 import { useThemeColors } from '@/lib/useThemeColors';
 import { useAuth, useSignUp } from '@clerk/expo';
 import { Link } from 'expo-router';
@@ -18,6 +19,7 @@ const SignUp = () => {
     const [emailAddress, setEmailAddress] = useState('');
     const [password, setPassword] = useState('');
     const [code, setCode] = useState('');
+    const [submitError, setSubmitError] = useState<string | null>(null);
 
     // Validation states
     const [emailTouched, setEmailTouched] = useState(false);
@@ -31,6 +33,8 @@ const SignUp = () => {
     const handleSubmit = async () => {
         if (!formValid) return;
 
+        setSubmitError(null);
+
         try {
             const { error } = await signUp.password({
                 emailAddress,
@@ -38,9 +42,10 @@ const SignUp = () => {
             });
 
             if (error) {
-                console.error(JSON.stringify(error, null, 2));
+                const message = getClerkErrorMessage(error, 'Unable to create your account. Please update your details and try again.');
+                setSubmitError(message);
                 posthog.capture('user_sign_up_failed', {
-                    error_message: error.message,
+                    error_message: message,
                 });
                 return;
             }
@@ -50,9 +55,10 @@ const SignUp = () => {
                 await signUp.verifications.sendEmailCode();
             }
         } catch (err) {
-            console.error('Sign-up error:', err);
+            const message = getClerkErrorMessage(err, 'Unable to create your account. Please update your details and try again.');
+            setSubmitError(message);
             posthog.capture('user_sign_up_error', {
-                error_message: err instanceof Error ? err.message : 'Unknown error',
+                error_message: message,
             });
         }
     };
@@ -77,12 +83,13 @@ const SignUp = () => {
                     },
                 });
             } else {
-                console.error('Sign-up attempt not complete:', signUp);
+                setSubmitError('Verification is not complete yet. Please try again.');
             }
         } catch (err) {
-            console.error('Verification error:', err);
+            const message = getClerkErrorMessage(err, 'Verification failed. Please check the code and try again.');
+            setSubmitError(message);
             posthog.capture('user_verification_failed', {
-                error_message: err instanceof Error ? err.message : 'Unknown error',
+                error_message: message,
             });
         }
     };
@@ -146,6 +153,10 @@ const SignUp = () => {
                                             <Text className="auth-error">{errors.fields.code.message}</Text>
                                         )}
                                     </View>
+
+                                    {submitError && (
+                                        <Text className="auth-error">{submitError}</Text>
+                                    )}
 
                                     <Pressable
                                         className={`auth-button ${(!code || fetchStatus === 'fetching') && 'auth-button-disabled'}`}
@@ -249,6 +260,10 @@ const SignUp = () => {
                                         <Text className="auth-helper">Minimum 8 characters required</Text>
                                     )}
                                 </View>
+
+                                {submitError && (
+                                    <Text className="auth-error">{submitError}</Text>
+                                )}
 
                                 <Pressable
                                     className={`auth-button ${(!formValid || fetchStatus === 'fetching') && 'auth-button-disabled'}`}
