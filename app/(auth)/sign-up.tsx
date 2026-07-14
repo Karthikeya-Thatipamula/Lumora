@@ -1,5 +1,6 @@
+import { useThemeColors } from '@/lib/useThemeColors';
 import { useAuth, useSignUp } from '@clerk/expo';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { styled } from 'nativewind';
 import { usePostHog } from 'posthog-react-native';
 import { useState } from 'react';
@@ -11,8 +12,8 @@ const SafeAreaView = styled(RNSafeAreaView);
 const SignUp = () => {
     const { signUp, errors, fetchStatus } = useSignUp();
     const { isSignedIn } = useAuth();
-    const router = useRouter();
     const posthog = usePostHog();
+    const themeColors = useThemeColors();
 
     const [emailAddress, setEmailAddress] = useState('');
     const [password, setPassword] = useState('');
@@ -70,11 +71,8 @@ const SignUp = () => {
                             return;
                         }
 
-                        posthog.identify(emailAddress, {
-                            $set: { email: emailAddress },
-                            $set_once: { sign_up_date: new Date().toISOString() },
-                        });
-                        posthog.capture('user_signed_up', { email: emailAddress });
+                        // Identity is centralized in app/_layout.tsx once auth state updates
+                        posthog.capture('user_signed_up');
                         // Auth state change will trigger root layout to render tabs
                     },
                 });
@@ -138,7 +136,7 @@ const SignUp = () => {
                                             className="auth-input"
                                             value={code}
                                             placeholder="Enter 6-digit code"
-                                            placeholderTextColor="rgba(0, 0, 0, 0.4)"
+                                            placeholderTextColor={themeColors.placeholder}
                                             onChangeText={setCode}
                                             keyboardType="number-pad"
                                             autoComplete="one-time-code"
@@ -215,7 +213,7 @@ const SignUp = () => {
                                         autoCapitalize="none"
                                         value={emailAddress}
                                         placeholder="name@example.com"
-                                        placeholderTextColor="rgba(0, 0, 0, 0.4)"
+                                        placeholderTextColor={themeColors.placeholder}
                                         onChangeText={setEmailAddress}
                                         onBlur={() => setEmailTouched(true)}
                                         keyboardType="email-address"
@@ -235,7 +233,7 @@ const SignUp = () => {
                                         className={`auth-input ${passwordTouched && !passwordValid && 'auth-input-error'}`}
                                         value={password}
                                         placeholder="Create a strong password"
-                                        placeholderTextColor="rgba(0, 0, 0, 0.4)"
+                                        placeholderTextColor={themeColors.placeholder}
                                         secureTextEntry
                                         onChangeText={setPassword}
                                         onBlur={() => setPasswordTouched(true)}
@@ -273,6 +271,13 @@ const SignUp = () => {
                                 </Pressable>
                             </Link>
                         </View>
+
+                        <Text className="mt-4 text-center text-xs font-sans-medium text-muted-foreground">
+                            By creating an account, you agree to Lumora&apos;s{' '}
+                            <Link href="/legal/terms"><Text className="text-accent">Terms of Use</Text></Link>
+                            {' '}and{' '}
+                            <Link href="/legal/privacy"><Text className="text-accent">Privacy Policy</Text></Link>.
+                        </Text>
 
                         {/* Required for Clerk's bot protection */}
                         <View nativeID="clerk-captcha" />

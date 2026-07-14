@@ -10,6 +10,25 @@ export const colors = {
     success: "#16a34a",
     destructive: "#dc2626",
     subscription: "#8fd1bd",
+    placeholder: "rgba(0, 0, 0, 0.4)",
+} as const;
+
+// Keep in sync with the `@media (prefers-color-scheme: dark)` block in global.css —
+// that block drives NativeWind's `bg-*`/`text-*` classes, this drives raw style props
+// (chart libraries, the tab bar, native controls) that can't consume CSS variables.
+export const darkColors: Record<keyof typeof colors, string> = {
+    background: "#0b0f1a",
+    foreground: "#f5f5f0",
+    card: "#131826",
+    muted: "#1c2436",
+    mutedForeground: "rgba(255, 255, 255, 0.6)",
+    primary: "#f5f5f0",
+    accent: "#ea7a53",
+    border: "rgba(255, 255, 255, 0.12)",
+    success: "#22c55e",
+    destructive: "#f87171",
+    subscription: "#2a4a42",
+    placeholder: "rgba(255, 255, 255, 0.4)",
 } as const;
 
 export const spacing = {

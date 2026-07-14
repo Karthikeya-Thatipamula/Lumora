@@ -1,20 +1,13 @@
 import { View, Text, Modal, Pressable, TextInput, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import clsx from 'clsx';
-import { icons } from '@/constants/icons';
-import dayjs from 'dayjs';
 import {posthog} from "@/src/config/posthog";
+import { useThemeColors } from '@/lib/useThemeColors';
 
-interface CreateSubscriptionModalProps {
-    visible: boolean;
-    onClose: () => void;
-    onSubmit: (subscription: Subscription) => void;
-}
-
-type Frequency = 'Monthly' | 'Yearly';
-type Category = 'Entertainment' | 'AI Tools' | 'Developer Tools' | 'Design' | 'Productivity' | 'Other';
-const CATEGORIES: Category[] = ['Entertainment', 'AI Tools', 'Developer Tools', 'Design', 'Productivity', 'Other'];
-const CATEGORY_COLORS: Record<Category, string> = {
+export type Frequency = 'Monthly' | 'Yearly';
+export type Category = 'Entertainment' | 'AI Tools' | 'Developer Tools' | 'Design' | 'Productivity' | 'Other';
+export const CATEGORIES: Category[] = ['Entertainment', 'AI Tools', 'Developer Tools', 'Design', 'Productivity', 'Other'];
+export const CATEGORY_COLORS: Record<Category, string> = {
     'Entertainment': '#ff6b6b',
     'AI Tools': '#b8d4e3',
     'Developer Tools': '#e8def8',
@@ -23,11 +16,37 @@ const CATEGORY_COLORS: Record<Category, string> = {
     'Other': '#d4d4d4',
 };
 
-const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscriptionModalProps) => {
-    const [name, setName] = useState('');
-    const [price, setPrice] = useState('');
-    const [frequency, setFrequency] = useState<Frequency>('Monthly');
-    const [category, setCategory] = useState<Category>('Other');
+export interface SubscriptionFormValues {
+    name: string;
+    price: number;
+    frequency: Frequency;
+    category: Category;
+}
+
+interface CreateSubscriptionModalProps {
+    visible: boolean;
+    onClose: () => void;
+    onSubmit: (values: SubscriptionFormValues) => void;
+    initialValues?: SubscriptionFormValues;
+    mode?: 'create' | 'edit';
+}
+
+const CreateSubscriptionModal = ({ visible, onClose, onSubmit, initialValues, mode = 'create' }: CreateSubscriptionModalProps) => {
+    const themeColors = useThemeColors();
+    const [name, setName] = useState(initialValues?.name ?? '');
+    const [price, setPrice] = useState(initialValues ? String(initialValues.price) : '');
+    const [frequency, setFrequency] = useState<Frequency>(initialValues?.frequency ?? 'Monthly');
+    const [category, setCategory] = useState<Category>(initialValues?.category ?? 'Other');
+
+    // Reset the form to the current initialValues whenever the modal opens
+    useEffect(() => {
+        if (visible) {
+            setName(initialValues?.name ?? '');
+            setPrice(initialValues ? String(initialValues.price) : '');
+            setFrequency(initialValues?.frequency ?? 'Monthly');
+            setCategory(initialValues?.category ?? 'Other');
+        }
+    }, [visible]);
 
     // Improved price validation
     const isValidPrice = () => {
@@ -45,34 +64,17 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
         if (!isValidForm) return;
 
         const priceValue = Number(price.trim());
-        const now = dayjs();
-        const renewalDate = frequency === 'Monthly' ? now.add(1, 'month') : now.add(1, 'year');
 
-        const newSubscription: Subscription = {
-            id: `sub-${Date.now()}`,
-            name: name.trim(),
-            price: priceValue,
-            currency: 'USD',
-            frequency,
-            category,
-            status: 'active',
-            startDate: now.toISOString(),
-            renewalDate: renewalDate.toISOString(),
-            icon: icons.plus,
-            billing: frequency,
-            color: CATEGORY_COLORS[category],
-        };
+        onSubmit({ name: name.trim(), price: priceValue, frequency, category });
 
-        onSubmit(newSubscription);
-
-        posthog.capture('subscription_created', {
+        posthog.capture(mode === 'create' ? 'subscription_created' : 'subscription_edited', {
             subscription_name: name.trim(),
             subscription_price: priceValue,
             subscription_frequency: frequency,
             subscription_category: category,
         })
 
-        resetForm();
+        if (mode === 'create') resetForm();
         onClose();
     };
 
@@ -84,7 +86,7 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
     };
 
     const handleClose = () => {
-        resetForm();
+        if (mode === 'create') resetForm();
         onClose();
     };
 
@@ -103,8 +105,8 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
                 <Pressable className="modal-overlay" onPress={handleClose}>
                     <Pressable className="modal-container" onPress={(e) => e.stopPropagation()}>
                         <View className="modal-header">
-                            <Text className="modal-title">New Subscription</Text>
-                            <Pressable className="modal-close" onPress={handleClose}>
+                            <Text className="modal-title">{mode === 'create' ? 'New Subscription' : 'Edit Subscription'}</Text>
+                            <Pressable className="modal-close" onPress={handleClose} accessibilityRole="button" accessibilityLabel="Close">
                                 <Text className="modal-close-text">✕</Text>
                             </Pressable>
                         </View>
@@ -120,7 +122,7 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
                                 <TextInput
                                     className="auth-input"
                                     placeholder="Subscription name"
-                                    placeholderTextColor="rgba(0, 0, 0, 0.4)"
+                                    placeholderTextColor={themeColors.placeholder}
                                     value={name}
                                     onChangeText={setName}
                                 />
@@ -131,7 +133,7 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
                                 <TextInput
                                     className="auth-input"
                                     placeholder="0.00"
-                                    placeholderTextColor="rgba(0, 0, 0, 0.4)"
+                                    placeholderTextColor={themeColors.placeholder}
                                     value={price}
                                     onChangeText={setPrice}
                                     keyboardType="decimal-pad"
@@ -181,8 +183,10 @@ const CreateSubscriptionModal = ({ visible, onClose, onSubmit }: CreateSubscript
                                 className={clsx('auth-button', !isValidForm && 'auth-button-disabled')}
                                 onPress={handleSubmit}
                                 disabled={!isValidForm}
+                                accessibilityRole="button"
+                                accessibilityLabel={mode === 'create' ? 'Create subscription' : 'Save changes'}
                             >
-                                <Text className="auth-button-text">Create Subscription</Text>
+                                <Text className="auth-button-text">{mode === 'create' ? 'Create Subscription' : 'Save Changes'}</Text>
                             </Pressable>
                         </ScrollView>
                     </Pressable>

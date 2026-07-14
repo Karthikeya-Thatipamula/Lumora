@@ -1,5 +1,6 @@
+import { useThemeColors } from '@/lib/useThemeColors';
 import { useSignIn } from '@clerk/expo';
-import { Link, useRouter } from 'expo-router';
+import { Link } from 'expo-router';
 import { styled } from 'nativewind';
 import { usePostHog } from 'posthog-react-native';
 import { useState } from 'react';
@@ -10,8 +11,8 @@ const SafeAreaView = styled(RNSafeAreaView);
 
 const SignIn = () => {
     const { signIn, errors, fetchStatus } = useSignIn();
-    const router = useRouter();
     const posthog = usePostHog();
+    const themeColors = useThemeColors();
 
     const [emailAddress, setEmailAddress] = useState('');
     const [password, setPassword] = useState('');
@@ -51,12 +52,8 @@ const SignIn = () => {
                             return;
                         }
 
-                        // Track successful sign-in
-                        posthog.identify(emailAddress, {
-                            $set: { email: emailAddress },
-                            $set_once: { first_sign_in_date: new Date().toISOString() },
-                        });
-                        posthog.capture('user_signed_in', { email: emailAddress });
+                        // Identity is centralized in app/_layout.tsx once auth state updates
+                        posthog.capture('user_signed_in');
                         // Auth state change will trigger root layout to render tabs
                     },
                 });
@@ -95,12 +92,8 @@ const SignIn = () => {
                             return;
                         }
 
-                        // Track successful sign-in after verification
-                        posthog.identify(emailAddress, {
-                            $set: { email: emailAddress },
-                            $set_once: { first_sign_in_date: new Date().toISOString() },
-                        });
-                        posthog.capture('user_signed_in', { email: emailAddress });
+                        // Identity is centralized in app/_layout.tsx once auth state updates
+                        posthog.capture('user_signed_in');
                         // Auth state change will trigger root layout to render tabs
                     },
                 });
@@ -136,7 +129,7 @@ const SignIn = () => {
                                         <Text className="auth-logo-mark-text">R</Text>
                                     </View>
                                     <View>
-                                        <Text className="auth-wordmark">Recurrly</Text>
+                                        <Text className="auth-wordmark">Lumora</Text>
                                         <Text className="auth-wordmark-sub">SUBSCRIPTIONS</Text>
                                     </View>
                                 </View>
@@ -155,7 +148,7 @@ const SignIn = () => {
                                             className="auth-input"
                                             value={code}
                                             placeholder="Enter 6-digit code"
-                                            placeholderTextColor="rgba(0, 0, 0, 0.4)"
+                                            placeholderTextColor={themeColors.placeholder}
                                             onChangeText={setCode}
                                             keyboardType="number-pad"
                                             autoComplete="one-time-code"
@@ -240,7 +233,7 @@ const SignIn = () => {
                                         autoCapitalize="none"
                                         value={emailAddress}
                                         placeholder="name@example.com"
-                                        placeholderTextColor="rgba(0, 0, 0, 0.4)"
+                                        placeholderTextColor={themeColors.placeholder}
                                         onChangeText={setEmailAddress}
                                         onBlur={() => setEmailTouched(true)}
                                         keyboardType="email-address"
@@ -260,7 +253,7 @@ const SignIn = () => {
                                         className={`auth-input ${passwordTouched && !passwordValid && 'auth-input-error'}`}
                                         value={password}
                                         placeholder="Enter your password"
-                                        placeholderTextColor="rgba(0, 0, 0, 0.4)"
+                                        placeholderTextColor={themeColors.placeholder}
                                         secureTextEntry
                                         onChangeText={setPassword}
                                         onBlur={() => setPasswordTouched(true)}
@@ -288,7 +281,7 @@ const SignIn = () => {
 
                         {/* Sign-Up Link */}
                         <View className="auth-link-row">
-                            <Text className="auth-link-copy">Don't have an account?</Text>
+                            <Text className="auth-link-copy">Don&apos;t have an account?</Text>
                             <Link href="/(auth)/sign-up" asChild>
                                 <Pressable>
                                     <Text className="auth-link">Create Account</Text>

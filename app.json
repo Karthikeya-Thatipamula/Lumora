@@ -1,17 +1,19 @@
 {
   "expo": {
-    "name": "React_native",
-    "slug": "React_native",
+    "name": "Lumora",
+    "slug": "lumora",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "reactnative",
+    "scheme": "lumora",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.lumora.app"
     },
     "android": {
+      "package": "com.lumora.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -54,7 +56,13 @@
       ],
       "@clerk/expo",
       "expo-secure-store",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-notifications",
+        {
+          "color": "#ea7a53"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

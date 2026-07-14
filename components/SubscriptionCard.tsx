@@ -1,14 +1,15 @@
-import {View, Text, Image, Pressable} from 'react-native'
+import {View, Text, Pressable} from 'react-native'
 import React from 'react'
 import {formatCurrency, formatStatusLabel, formatSubscriptionDateTime} from "@/lib/utils";
 import clsx from "clsx";
+import SubscriptionAvatar from "@/components/SubscriptionAvatar";
 
-const SubscriptionCard = ({ name, price, currency, icon, billing, color, category, plan, renewalDate, expanded, onPress, paymentMethod, startDate, status}: SubscriptionCardProps) => {
+const SubscriptionCard = ({ name, price, currency, iconKey, billing, color, category, plan, renewalDate, expanded, onPress, onManagePress, paymentMethod, startDate, status}: SubscriptionCardProps) => {
     return (
-        <Pressable onPress={onPress} className={clsx('sub-card', expanded ? 'sub-card-expanded' : 'bg-card')} style={!expanded && color ? { backgroundColor: color } : undefined}>
+        <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${name}, ${formatCurrency(price, currency)} per ${billing}`} className={clsx('sub-card', expanded ? 'sub-card-expanded' : 'bg-card')} style={!expanded && color ? { backgroundColor: color } : undefined}>
             <View className="sub-head">
                 <View className="sub-main">
-                    <Image source={icon} className="sub-icon" />
+                    <SubscriptionAvatar name={name} iconKey={iconKey} className="sub-icon" />
                     <View className="sub-copy">
                         <Text numberOfLines={1} className="sub-title">
                             {name}
@@ -59,6 +60,12 @@ const SubscriptionCard = ({ name, price, currency, icon, billing, color, categor
                             </View>
                         </View>
                     </View>
+
+                    {onManagePress && (
+                        <Pressable className="sub-cancel" onPress={onManagePress} accessibilityRole="button" accessibilityLabel={`Manage ${name}`}>
+                            <Text className="sub-cancel-text">Manage</Text>
+                        </Pressable>
+                    )}
                 </View>
             )}
         </Pressable>

@@ -1,5 +1,6 @@
 import { tabs } from "@/constants/data";
 import { colors, components } from '@/constants/theme';
+import { useNotificationSync } from '@/lib/useNotificationSync';
 import { useAuth } from '@clerk/expo';
 import clsx from "clsx";
 import { Redirect, Tabs } from "expo-router";
@@ -20,6 +21,7 @@ const TabIcon = ({focused, icon}: TabIconProps) => {
 const TabLayout = () => {
     const { isSignedIn, isLoaded } = useAuth();
     const insets = useSafeAreaInsets();
+    useNotificationSync();
 
     // Wait for auth to load
     if (!isLoaded) {
