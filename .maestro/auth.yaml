@@ -1,0 +1,37 @@
+appId: com.lumora.app
+name: Sign in and land on the tab tree
+env:
+  EMAIL: ${MAESTRO_TEST_EMAIL}
+  PASSWORD: ${MAESTRO_TEST_PASSWORD}
+---
+# Covers the gate that app/(tabs)/_layout.tsx enforces: an unauthenticated launch must
+# redirect to sign-in, and a successful sign-in must reach Home rather than stalling on
+# the "Securing your Lumora data…" screen while Convex auth resolves.
+- launchApp:
+    clearState: true
+
+- assertVisible: 'Welcome back'
+
+- tapOn:
+    id: 'name@example.com'
+- inputText: ${EMAIL}
+
+- tapOn:
+    id: 'Enter your password'
+- inputText: ${PASSWORD}
+
+- tapOn:
+    accessibilityLabel: 'Sign in'
+
+# Convex auth resolves after Clerk does, so Home can take a moment to appear.
+- extendedWaitUntil:
+    visible: 'Add subscription'
+    timeout: 20000
+
+- assertVisible: 'Home'
+- assertVisible: 'Subscriptions'
+- assertVisible: 'Insights'
+- assertVisible: 'Settings'
+
+# The auth group must now bounce a signed-in user away from sign-in.
+- assertNotVisible: 'Welcome back'

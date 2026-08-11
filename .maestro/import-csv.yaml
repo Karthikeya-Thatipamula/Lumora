@@ -1,0 +1,37 @@
+appId: com.lumora.app
+name: Import subscriptions from pasted CSV
+env:
+  EMAIL: ${MAESTRO_TEST_EMAIL}
+  PASSWORD: ${MAESTRO_TEST_PASSWORD}
+---
+# The import path is the one place a free user can currently add subscriptions without
+# passing the paywall check on Home — see the free-tier work in convex/subscriptions.ts.
+# Once the server enforces the limit, this flow is what proves the refusal is visible in
+# the UI rather than silently swallowed.
+- launchApp:
+    clearState: true
+- runFlow: sign-in.yaml
+
+- tapOn: 'Settings'
+- tapOn: 'Import from CSV'
+
+- tapOn:
+    accessibilityLabel: 'Paste CSV data'
+- inputText: |
+    Name,Price,Billing
+    Maestro Import A,9.99,Monthly
+    Maestro Import B,120,Yearly
+
+- tapOn:
+    accessibilityLabel: 'Import 2 subscriptions'
+
+- extendedWaitUntil:
+    visible: 'Maestro Import A'
+    timeout: 15000
+
+- tapOn: 'Subscriptions'
+- assertVisible: 'Maestro Import A'
+- assertVisible: 'Maestro Import B'
+
+# The yearly row must show its own price, not a monthly-normalised one.
+- assertVisible: '$120.00'
