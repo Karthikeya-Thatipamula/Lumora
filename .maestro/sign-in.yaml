@@ -1,0 +1,24 @@
+appId: com.lumora.app
+name: Sign in (subflow)
+env:
+  EMAIL: ${MAESTRO_TEST_EMAIL}
+  PASSWORD: ${MAESTRO_TEST_PASSWORD}
+---
+# Extracted so the other flows can reach a signed-in state without repeating it.
+# auth.yaml is the one that actually asserts the sign-in behaviour.
+- assertVisible: 'Welcome back'
+
+- tapOn:
+    id: 'name@example.com'
+- inputText: ${EMAIL}
+
+- tapOn:
+    id: 'Enter your password'
+- inputText: ${PASSWORD}
+
+- tapOn:
+    accessibilityLabel: 'Sign in'
+
+- extendedWaitUntil:
+    visible: 'Add subscription'
+    timeout: 20000

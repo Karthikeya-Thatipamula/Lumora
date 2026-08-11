@@ -1,0 +1,13 @@
+# Maestro reads this when you run `maestro test .maestro/`.
+#
+# These flows drive a real build, so they need a dev-client or release build installed on
+# a simulator/emulator — Expo Go will not do, because the app id has to match.
+#
+#   npx expo run:ios          # or run:android
+#   maestro test .maestro/
+#
+# auth.yaml needs a throwaway Clerk account. Set these before running:
+#   export MAESTRO_TEST_EMAIL=...
+#   export MAESTRO_TEST_PASSWORD=...
+flows:
+  - '*.yaml'

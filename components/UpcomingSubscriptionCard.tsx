@@ -1,13 +1,23 @@
-import {View, Text} from 'react-native'
-import React from 'react'
-import {formatCurrency} from "@/lib/utils";
-import SubscriptionAvatar from "@/components/SubscriptionAvatar";
+import { View, Text } from 'react-native';
+import React from 'react';
+import { formatCurrency } from '@/lib/utils';
+import SubscriptionAvatar from '@/components/SubscriptionAvatar';
 
-const UpcomingSubscriptionCard = ({ name, price, daysLeft, iconKey, currency }: UpcomingSubscription) => {
+const UpcomingSubscriptionCard = ({
+    name,
+    price,
+    daysLeft,
+    iconKey,
+    currency,
+}: UpcomingSubscription) => {
     return (
         <View className="upcoming-card">
             <View className="upcoming-row">
-                <SubscriptionAvatar name={name} iconKey={iconKey} className="upcoming-icon rounded-lg" />
+                <SubscriptionAvatar
+                    name={name}
+                    iconKey={iconKey}
+                    className="upcoming-icon rounded-lg"
+                />
                 <View>
                     <Text className="upcoming-price">{formatCurrency(price, currency)}</Text>
                     <Text className="upcoming-meta" numberOfLines={1}>
@@ -16,8 +26,10 @@ const UpcomingSubscriptionCard = ({ name, price, daysLeft, iconKey, currency }: 
                 </View>
             </View>
 
-            <Text className="upcoming-name" numberOfLines={1}>{name}</Text>
+            <Text className="upcoming-name" numberOfLines={1}>
+                {name}
+            </Text>
         </View>
-    )
-}
-export default UpcomingSubscriptionCard
+    );
+};
+export default UpcomingSubscriptionCard;

@@ -1,3 +1,4 @@
+import { colors } from '@/constants/theme';
 import { icons } from '@/constants/icons';
 import { getAvatarColor, getInitials, resolveIconKey } from '@/lib/icon-resolver';
 import { Image, Text, View } from 'react-native';
@@ -18,10 +19,18 @@ const SubscriptionAvatar = ({ name, iconKey, className }: SubscriptionAvatarProp
     return (
         <View
             className={className}
-            style={{ backgroundColor: getAvatarColor(name || 'subscription'), alignItems: 'center', justifyContent: 'center' }}
+            style={{
+                backgroundColor: getAvatarColor(name || 'subscription'),
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
             accessibilityLabel={`${name} icon`}
         >
-            <Text className="font-sans-bold text-primary">{getInitials(name)}</Text>
+            {/* The palette is always light, so the initials need fixed dark ink —
+                `text-primary` inverts to near-white in dark mode and disappears. */}
+            <Text className="font-sans-bold" style={{ color: colors.foreground }}>
+                {getInitials(name)}
+            </Text>
         </View>
     );
 };

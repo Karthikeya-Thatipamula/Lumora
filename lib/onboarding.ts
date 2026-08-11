@@ -10,7 +10,10 @@ const HAS_ONBOARDED_KEY = 'lumora_has_onboarded';
 export async function getHasOnboarded(): Promise<boolean> {
     try {
         if (Platform.OS === 'web') {
-            return typeof localStorage !== 'undefined' && localStorage.getItem(HAS_ONBOARDED_KEY) === 'true';
+            return (
+                typeof localStorage !== 'undefined' &&
+                localStorage.getItem(HAS_ONBOARDED_KEY) === 'true'
+            );
         }
         const value = await SecureStore.getItemAsync(HAS_ONBOARDED_KEY);
         return value === 'true';

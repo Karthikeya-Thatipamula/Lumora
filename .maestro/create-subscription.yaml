@@ -1,0 +1,40 @@
+appId: com.lumora.app
+name: Create a subscription and see it on the list
+env:
+  EMAIL: ${MAESTRO_TEST_EMAIL}
+  PASSWORD: ${MAESTRO_TEST_PASSWORD}
+---
+# The create path crosses every layer at once: the modal's form validation, the Convex
+# mutation and its server-side validators, and the live query that has to push the new row
+# back into the list without a manual refresh.
+- launchApp:
+    clearState: true
+- runFlow: sign-in.yaml
+
+- tapOn:
+    accessibilityLabel: 'Add subscription'
+
+- tapOn:
+    id: 'Subscription name'
+- inputText: 'Maestro Test Sub'
+
+- tapOn:
+    id: '0.00'
+- inputText: '12.34'
+
+- tapOn: 'Add subscription'
+
+# Written through Convex and pushed back down by the live query, not optimistically.
+- extendedWaitUntil:
+    visible: 'Maestro Test Sub'
+    timeout: 15000
+
+- tapOn: 'Subscriptions'
+- assertVisible: 'Maestro Test Sub'
+- assertVisible: '$12.34'
+
+# Clean up so the flow is re-runnable against the same account.
+- tapOn: 'Maestro Test Sub'
+- tapOn: 'Delete'
+- tapOn: 'Delete'
+- assertNotVisible: 'Maestro Test Sub'

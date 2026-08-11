@@ -1,7 +1,7 @@
 import '@/global.css';
 import { getHasOnboarded } from '@/lib/onboarding';
 import { useAuth } from '@clerk/expo';
-import { Redirect, Stack } from "expo-router";
+import { Redirect, Stack } from 'expo-router';
 import { useEffect, useState } from 'react';
 
 export default function AuthLayout() {
