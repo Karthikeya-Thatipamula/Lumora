@@ -27,10 +27,19 @@ const UNREGISTERED_MODULES = new Map([
         'react-native-reanimated',
         'import { AnimatedView, AnimatedText, AnimatedPressable } from "@/components/motion/Animated" instead.',
     ],
-    ['react-native-gifted-charts', 'Pass the chart its own style props, or wrap it with styled() first.'],
-    ['react-native-svg', 'Pass SVG style props directly, or wrap the component with styled() first.'],
+    [
+        'react-native-gifted-charts',
+        'Pass the chart its own style props, or wrap it with styled() first.',
+    ],
+    [
+        'react-native-svg',
+        'Pass SVG style props directly, or wrap the component with styled() first.',
+    ],
     ['expo-linear-gradient', 'Wrap it with styled() before using className.'],
-    ['expo-image', 'Wrap it with styled(), or use the core React Native Image, which is registered.'],
+    [
+        'expo-image',
+        'Wrap it with styled(), or use the core React Native Image, which is registered.',
+    ],
     ['@expo/vector-icons', "Use the icon's own size and color props instead of className."],
     ['react-native-purchases-ui', 'Wrap it with styled() before using className.'],
 ]);
@@ -66,7 +75,7 @@ module.exports = {
                 (attribute) =>
                     attribute.type === 'JSXAttribute' &&
                     attribute.name.type === 'JSXIdentifier' &&
-                    attribute.name.name === 'className'
+                    attribute.name.name === 'className',
             );
         }
 

@@ -40,8 +40,9 @@ export function matchesSearch(sub: Subscription, query: string): boolean {
     const needle = query.trim().toLowerCase();
     if (!needle) return true;
 
-    return [sub.name, sub.category, sub.plan, sub.paymentMethod]
-        .some((field) => field?.toLowerCase().includes(needle));
+    return [sub.name, sub.category, sub.plan, sub.paymentMethod].some((field) =>
+        field?.toLowerCase().includes(needle),
+    );
 }
 
 function compare(a: Subscription, b: Subscription, order: SortOrder): number {
@@ -65,7 +66,7 @@ function compare(a: Subscription, b: Subscription, order: SortOrder): number {
 
 export function filterAndSort(
     subscriptions: Subscription[],
-    { query, status, order }: { query: string; status: StatusFilter; order: SortOrder }
+    { query, status, order }: { query: string; status: StatusFilter; order: SortOrder },
 ): Subscription[] {
     return subscriptions
         .filter((sub) => matchesStatusFilter(sub, status) && matchesSearch(sub, query))
@@ -80,7 +81,7 @@ export function countsByFilter(subscriptions: Subscription[]): Record<StatusFilt
             acc[key] = subscriptions.filter((sub) => matchesStatusFilter(sub, key)).length;
             return acc;
         },
-        {} as Record<StatusFilter, number>
+        {} as Record<StatusFilter, number>,
     );
 }
 

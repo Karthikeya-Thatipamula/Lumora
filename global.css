@@ -1,8 +1,8 @@
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/preflight.css" layer(base);
-@import "tailwindcss/utilities.css";
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css';
 
-@import "nativewind/theme";
+@import 'nativewind/theme';
 
 @theme {
     --color-background: #fff9e3;
@@ -268,7 +268,6 @@
         @apply font-sans-bold text-destructive;
     }
 
-
     .sub-cancel-text {
         @apply font-sans-bold text-background;
     }
@@ -304,9 +303,6 @@
     .auth-brand-block {
         @apply mt-2 items-center;
     }
-
-
-
 
     .auth-wordmark {
         @apply text-3xl font-sans-extrabold text-primary;
@@ -372,7 +368,6 @@
         @apply mt-5 text-center text-xs font-sans-medium text-muted-foreground;
     }
 
-
     .auth-error {
         @apply text-xs font-sans-medium text-destructive;
     }
@@ -400,9 +395,6 @@
     .auth-secondary-button-text {
         @apply text-sm font-sans-semibold text-accent;
     }
-
-
-
 
     .auth-link-row {
         @apply mt-5 flex-row items-center justify-center gap-1;
@@ -439,7 +431,6 @@
     .modal-close-text {
         @apply text-lg font-sans-bold text-primary;
     }
-
 
     .picker-row {
         @apply flex-row gap-3;

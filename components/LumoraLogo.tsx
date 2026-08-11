@@ -28,7 +28,9 @@ export const LumoraLogo = ({ size = 56, variant = 'tile', glyphColor }: LumoraLo
                 </LinearGradient>
             </Defs>
 
-            {variant === 'tile' && <Rect x="0" y="0" width="48" height="48" rx="14" fill="url(#lumoraTile)" />}
+            {variant === 'tile' && (
+                <Rect x="0" y="0" width="48" height="48" rx="14" fill="url(#lumoraTile)" />
+            )}
 
             <Path
                 d="M17 12 L17 30 Q17 32 19 32 L32 32"

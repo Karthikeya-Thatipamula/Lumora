@@ -1,7 +1,13 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect } from 'react';
 import { useWindowDimensions, View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import Animated, {
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withTiming,
+} from 'react-native-reanimated';
 
 interface AuroraBlobProps {
     colors: readonly [string, string];
@@ -21,7 +27,7 @@ const AuroraBlob = ({ colors, size, top, left, durationMs, driftX, driftY }: Aur
         progress.value = withRepeat(
             withTiming(1, { duration: durationMs, easing: Easing.inOut(Easing.sin) }),
             -1,
-            true
+            true,
         );
     }, [durationMs, progress]);
 
@@ -35,7 +41,10 @@ const AuroraBlob = ({ colors, size, top, left, durationMs, driftX, driftY }: Aur
 
     return (
         <Animated.View
-            style={[{ position: 'absolute', top, left, width: size, height: size, opacity: 0.4 }, animatedStyle]}
+            style={[
+                { position: 'absolute', top, left, width: size, height: size, opacity: 0.4 },
+                animatedStyle,
+            ]}
         >
             <LinearGradient
                 colors={colors}
@@ -66,7 +75,14 @@ const AuroraBackground = () => {
 
     return (
         <View
-            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 380 * unit, overflow: 'hidden' }}
+            style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 380 * unit,
+                overflow: 'hidden',
+            }}
             pointerEvents="none"
         >
             <AuroraBlob

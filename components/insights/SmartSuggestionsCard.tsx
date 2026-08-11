@@ -1,4 +1,9 @@
-import { AnnualUpgradeNudge, CostPerUse, DuplicateCategoryNudge, PriceHikeNudge } from '@/lib/insights';
+import {
+    AnnualUpgradeNudge,
+    CostPerUse,
+    DuplicateCategoryNudge,
+    PriceHikeNudge,
+} from '@/lib/insights';
 import { formatCurrency } from '@/lib/utils';
 import { Text, View } from 'react-native';
 
@@ -45,7 +50,10 @@ const SmartSuggestionsCard = ({
             <Text className="text-base font-sans-semibold text-primary">Smart Suggestions</Text>
 
             {!hasSuggestions && (
-                <Suggestion emoji="✨" text="You're all optimized — no duplicate subscriptions, price hikes, or stale pauses right now." />
+                <Suggestion
+                    emoji="✨"
+                    text="You're all optimized — no duplicate subscriptions, price hikes, or stale pauses right now."
+                />
             )}
 
             {poorValue.slice(0, 3).map(({ subscription, costPerUse }) => (
@@ -98,7 +106,8 @@ const SmartSuggestionsCard = ({
 
             {topAnnualUpgrades.length > 0 && (
                 <Text className="text-xs font-sans-medium text-muted-foreground">
-                    Annual savings are estimates based on typical pricing, not quotes from the provider.
+                    Annual savings are estimates based on typical pricing, not quotes from the
+                    provider.
                 </Text>
             )}
         </View>

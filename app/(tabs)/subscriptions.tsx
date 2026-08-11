@@ -1,9 +1,9 @@
-import PressableScale from "@/components/motion/PressableScale";
-import { SubscriptionListSkeleton } from "@/components/motion/Skeleton";
+import PressableScale from '@/components/motion/PressableScale';
+import { SubscriptionListSkeleton } from '@/components/motion/Skeleton';
 import { SafeAreaView } from '@/components/SafeAreaView';
-import SubscriptionCard from "@/components/SubscriptionCard";
-import { getTabBarContentInset } from "@/constants/theme";
-import { alertDialog, confirmDialog } from "@/lib/dialogs";
+import SubscriptionCard from '@/components/SubscriptionCard';
+import { getTabBarContentInset } from '@/constants/theme';
+import { alertDialog, confirmDialog } from '@/lib/dialogs';
 import {
     countsByFilter,
     filterAndSort,
@@ -11,23 +11,23 @@ import {
     SortOrder,
     STATUS_FILTERS,
     StatusFilter,
-} from "@/lib/subscriptionFilters";
-import { useSubscriptions } from "@/lib/useSubscriptions";
-import { useThemeColors } from "@/lib/useThemeColors";
-import { clsx } from "clsx";
-import { useRouter } from "expo-router";
+} from '@/lib/subscriptionFilters';
+import { useSubscriptions } from '@/lib/useSubscriptions';
+import { useThemeColors } from '@/lib/useThemeColors';
+import { clsx } from 'clsx';
+import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from 'react';
 import { FlatList, ScrollView, Text, TextInput, View } from 'react-native';
-import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Subscriptions = () => {
     const posthog = usePostHog();
     const router = useRouter();
     const themeColors = useThemeColors();
     const insets = useSafeAreaInsets();
-    const [searchQuery, setSearchQuery] = useState("");
+    const [searchQuery, setSearchQuery] = useState('');
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [sortOrder, setSortOrder] = useState<SortOrder>('renewal');
     const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -35,8 +35,13 @@ const Subscriptions = () => {
 
     const counts = useMemo(() => countsByFilter(subscriptions), [subscriptions]);
     const visibleSubscriptions = useMemo(
-        () => filterAndSort(subscriptions, { query: searchQuery, status: statusFilter, order: sortOrder }),
-        [subscriptions, searchQuery, statusFilter, sortOrder]
+        () =>
+            filterAndSort(subscriptions, {
+                query: searchQuery,
+                status: statusFilter,
+                order: sortOrder,
+            }),
+        [subscriptions, searchQuery, statusFilter, sortOrder],
     );
 
     useEffect(() => {
@@ -58,7 +63,7 @@ const Subscriptions = () => {
         const isExpanding = expandedId !== id;
         setExpandedId(expandedId === id ? null : id);
 
-        const subscription = subscriptions.find(s => s.id === id);
+        const subscription = subscriptions.find((s) => s.id === id);
         posthog.capture(isExpanding ? 'subscription_expanded' : 'subscription_collapsed', {
             subscription_id: id,
             subscription_name: subscription?.name ?? null,
@@ -77,7 +82,10 @@ const Subscriptions = () => {
 
         try {
             await deleteSubscription(subscription.id);
-            posthog.capture('subscription_deleted', { subscription_id: subscription.id, source: 'subscriptions_screen' });
+            posthog.capture('subscription_deleted', {
+                subscription_id: subscription.id,
+                source: 'subscriptions_screen',
+            });
         } catch (error) {
             console.error('Delete subscription failed:', error);
             alertDialog('Delete failed', 'Please try again once your account is fully loaded.');
@@ -101,7 +109,9 @@ const Subscriptions = () => {
                 keyExtractor={(item) => item.id}
                 ListHeaderComponent={
                     <View className="pb-4 pt-5">
-                        <Text className="mb-5 px-5 text-3xl font-sans-bold text-primary">Subscriptions</Text>
+                        <Text className="mb-5 px-5 text-3xl font-sans-bold text-primary">
+                            Subscriptions
+                        </Text>
 
                         <TextInput
                             className="mx-5 mb-4 rounded-xl bg-card px-4 py-3 text-primary"
@@ -118,18 +128,31 @@ const Subscriptions = () => {
                             horizontal
                             showsHorizontalScrollIndicator={false}
                             keyboardShouldPersistTaps="handled"
-                            contentContainerStyle={{ gap: 8, paddingHorizontal: 20, paddingBottom: 12 }}
+                            contentContainerStyle={{
+                                gap: 8,
+                                paddingHorizontal: 20,
+                                paddingBottom: 12,
+                            }}
                         >
                             {STATUS_FILTERS.map((filter) => (
                                 <PressableScale
                                     key={filter.key}
-                                    className={clsx('category-chip', statusFilter === filter.key && 'category-chip-active')}
+                                    className={clsx(
+                                        'category-chip',
+                                        statusFilter === filter.key && 'category-chip-active',
+                                    )}
                                     onPress={() => setStatusFilter(filter.key)}
                                     accessibilityRole="button"
                                     accessibilityState={{ selected: statusFilter === filter.key }}
                                     accessibilityLabel={`${filter.label}, ${counts[filter.key]} subscriptions`}
                                 >
-                                    <Text className={clsx('category-chip-text', statusFilter === filter.key && 'category-chip-text-active')}>
+                                    <Text
+                                        className={clsx(
+                                            'category-chip-text',
+                                            statusFilter === filter.key &&
+                                                'category-chip-text-active',
+                                        )}
+                                    >
                                         {filter.label} {counts[filter.key]}
                                     </Text>
                                 </PressableScale>
@@ -142,20 +165,32 @@ const Subscriptions = () => {
                             keyboardShouldPersistTaps="handled"
                             contentContainerStyle={{ gap: 8, paddingHorizontal: 20 }}
                         >
-                            <Text className="self-center text-xs font-sans-semibold text-muted-foreground">Sort</Text>
+                            <Text className="self-center text-xs font-sans-semibold text-muted-foreground">
+                                Sort
+                            </Text>
                             {SORT_ORDERS.map((option) => (
                                 <PressableScale
                                     key={option.key}
-                                    className={clsx('category-chip', sortOrder === option.key && 'category-chip-active')}
+                                    className={clsx(
+                                        'category-chip',
+                                        sortOrder === option.key && 'category-chip-active',
+                                    )}
                                     onPress={() => {
                                         setSortOrder(option.key);
-                                        posthog.capture('subscriptions_sorted', { order: option.key });
+                                        posthog.capture('subscriptions_sorted', {
+                                            order: option.key,
+                                        });
                                     }}
                                     accessibilityRole="button"
                                     accessibilityState={{ selected: sortOrder === option.key }}
                                     accessibilityLabel={`Sort by ${option.label}`}
                                 >
-                                    <Text className={clsx('category-chip-text', sortOrder === option.key && 'category-chip-text-active')}>
+                                    <Text
+                                        className={clsx(
+                                            'category-chip-text',
+                                            sortOrder === option.key && 'category-chip-text-active',
+                                        )}
+                                    >
                                         {option.label}
                                     </Text>
                                 </PressableScale>
@@ -178,7 +213,11 @@ const Subscriptions = () => {
                     </Animated.View>
                 )}
                 extraData={expandedId}
-                contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: getTabBarContentInset(insets.bottom), gap: 12 }}
+                contentContainerStyle={{
+                    paddingHorizontal: 20,
+                    paddingBottom: getTabBarContentInset(insets.bottom),
+                    gap: 12,
+                }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="on-drag"
@@ -193,6 +232,6 @@ const Subscriptions = () => {
                 }
             />
         </SafeAreaView>
-    )
-}
-export default Subscriptions
+    );
+};
+export default Subscriptions;

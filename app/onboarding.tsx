@@ -82,7 +82,9 @@ const Onboarding = () => {
                             accessibilityLabel="Skip onboarding"
                             hitSlop={12}
                         >
-                            <Text className="text-sm font-sans-semibold text-muted-foreground">Skip</Text>
+                            <Text className="text-sm font-sans-semibold text-muted-foreground">
+                                Skip
+                            </Text>
                         </Pressable>
                     )}
                 </View>
@@ -98,7 +100,9 @@ const Onboarding = () => {
                         <View className="size-28 items-center justify-center rounded-full bg-accent/15">
                             <Text style={{ fontSize: 56 }}>{slide.emoji}</Text>
                         </View>
-                        <Text className="text-center text-3xl font-sans-extrabold text-primary">{slide.title}</Text>
+                        <Text className="text-center text-3xl font-sans-extrabold text-primary">
+                            {slide.title}
+                        </Text>
                         <Text className="auth-subtitle max-w-85">{slide.body}</Text>
                     </AnimatedView>
                 </View>
@@ -114,21 +118,33 @@ const Onboarding = () => {
                             className="h-2 rounded-full"
                             style={{
                                 width: index === slideIndex ? 24 : 8,
-                                backgroundColor: index === slideIndex ? themeColors.accent : themeColors.border,
+                                backgroundColor:
+                                    index === slideIndex ? themeColors.accent : themeColors.border,
                             }}
                         />
                     ))}
                 </View>
 
                 <Animated.View entering={FadeIn.duration(400)}>
-                    <PressableScale className="auth-button" onPress={handleNext} disabled={isLeaving} accessibilityRole="button">
-                        <Text className="auth-button-text">{isLastSlide ? 'Get Started — Free' : 'Next'}</Text>
+                    <PressableScale
+                        className="auth-button"
+                        onPress={handleNext}
+                        disabled={isLeaving}
+                        accessibilityRole="button"
+                    >
+                        <Text className="auth-button-text">
+                            {isLastSlide ? 'Get Started — Free' : 'Next'}
+                        </Text>
                     </PressableScale>
 
                     <View className="auth-link-row">
                         <Text className="auth-link-copy">Already have an account?</Text>
                         <Link href="/(auth)/sign-in" asChild>
-                            <Pressable onPress={() => finishOnboarding('/(auth)/sign-in')} hitSlop={8} accessibilityRole="button">
+                            <Pressable
+                                onPress={() => finishOnboarding('/(auth)/sign-in')}
+                                hitSlop={8}
+                                accessibilityRole="button"
+                            >
                                 <Text className="auth-link">Sign In</Text>
                             </Pressable>
                         </Link>
@@ -136,7 +152,7 @@ const Onboarding = () => {
                 </Animated.View>
             </View>
         </SafeAreaView>
-    )
-}
+    );
+};
 
-export default Onboarding
+export default Onboarding;

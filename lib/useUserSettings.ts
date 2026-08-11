@@ -1,7 +1,7 @@
-import { api } from "@/convex/_generated/api";
-import { getDeviceCurrency } from "@/lib/currency";
-import { useAuth } from "@clerk/expo";
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { api } from '@/convex/_generated/api';
+import { getDeviceCurrency } from '@/lib/currency';
+import { useAuth } from '@clerk/expo';
+import { useConvexAuth, useMutation, useQuery } from 'convex/react';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 
@@ -26,14 +26,16 @@ export function useUserSettings() {
     const canQuery = isLoaded && Boolean(isSignedIn) && !isConvexAuthLoading && isAuthenticated;
     const isAuthResolving = !isLoaded || (Boolean(isSignedIn) && isConvexAuthLoading);
 
-    const settings = useQuery(api.userSettings.get, canQuery ? {} : "skip");
+    const settings = useQuery(api.userSettings.get, canQuery ? {} : 'skip');
     const updateMutation = useMutation(api.userSettings.update);
 
     const isLoading = isAuthResolving || (canQuery && settings === undefined);
 
     const updateSettings = async (patch: UserSettingsPatch) => {
         if (!canQuery) {
-            throw new Error("Please wait for your secure data connection before updating settings.");
+            throw new Error(
+                'Please wait for your secure data connection before updating settings.',
+            );
         }
         // No optimistic local copy needed — the mutation's write pushes straight back
         // through the live query, so the toggle reflects the value that actually saved.

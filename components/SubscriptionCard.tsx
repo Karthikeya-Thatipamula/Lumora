@@ -1,11 +1,31 @@
-import {View, Text, Pressable} from 'react-native'
-import React from 'react'
-import dayjs from 'dayjs'
-import {formatCurrency, formatStatusLabel, formatSubscriptionDateTime} from "@/lib/utils";
-import { clsx } from "clsx";
-import SubscriptionAvatar from "@/components/SubscriptionAvatar";
+import { View, Text, Pressable } from 'react-native';
+import React from 'react';
+import dayjs from 'dayjs';
+import { formatCurrency, formatStatusLabel, formatSubscriptionDateTime } from '@/lib/utils';
+import { clsx } from 'clsx';
+import SubscriptionAvatar from '@/components/SubscriptionAvatar';
 
-const SubscriptionCard = ({ name, price, currency, iconKey, billing, color, category, plan, renewalDate, expanded, onPress, onManagePress, onDeletePress, paymentMethod, startDate, status, isTrial, trialEndsAt, householdSize}: SubscriptionCardProps) => {
+const SubscriptionCard = ({
+    name,
+    price,
+    currency,
+    iconKey,
+    billing,
+    color,
+    category,
+    plan,
+    renewalDate,
+    expanded,
+    onPress,
+    onManagePress,
+    onDeletePress,
+    paymentMethod,
+    startDate,
+    status,
+    isTrial,
+    trialEndsAt,
+    householdSize,
+}: SubscriptionCardProps) => {
     const onTrial = Boolean(isTrial && trialEndsAt && status !== 'cancelled');
     const trialDaysLeft = onTrial
         ? Math.max(0, dayjs(trialEndsAt).startOf('day').diff(dayjs().startOf('day'), 'day'))
@@ -19,7 +39,11 @@ const SubscriptionCard = ({ name, price, currency, iconKey, billing, color, cate
             accessibilityRole="button"
             accessibilityState={{ expanded }}
             accessibilityLabel={`${name}, ${formatCurrency(splitWays ? price / splitWays : price, currency)} per ${billing}`}
-            className={clsx('sub-card', expanded && 'sub-card-expanded', isCancelled && 'opacity-60')}
+            className={clsx(
+                'sub-card',
+                expanded && 'sub-card-expanded',
+                isCancelled && 'opacity-60',
+            )}
         >
             {/* The category colour reads as a spine rather than a fill. Filling the card
                 with these light pastels left near-white dark-mode text unreadable on top. */}
@@ -33,14 +57,20 @@ const SubscriptionCard = ({ name, price, currency, iconKey, billing, color, cate
                             {name}
                         </Text>
                         <Text numberOfLines={1} ellipsizeMode="tail" className="sub-meta">
-                            {category?.trim() || plan?.trim() || (renewalDate ? formatSubscriptionDateTime(renewalDate) : '')}
+                            {category?.trim() ||
+                                plan?.trim() ||
+                                (renewalDate ? formatSubscriptionDateTime(renewalDate) : '')}
                         </Text>
                     </View>
                 </View>
 
                 <View className="sub-price-box">
-                    <Text className="sub-price">{formatCurrency(splitWays ? price / splitWays : price, currency)}</Text>
-                    <Text className="sub-billing" numberOfLines={1}>{splitWays ? `${billing} · share` : billing}</Text>
+                    <Text className="sub-price">
+                        {formatCurrency(splitWays ? price / splitWays : price, currency)}
+                    </Text>
+                    <Text className="sub-billing" numberOfLines={1}>
+                        {splitWays ? `${billing} · share` : billing}
+                    </Text>
                 </View>
             </View>
 
@@ -49,7 +79,9 @@ const SubscriptionCard = ({ name, price, currency, iconKey, billing, color, cate
                     {onTrial && (
                         <View className="sub-badge sub-badge-accent">
                             <Text className="sub-badge-text-accent">
-                                {trialDaysLeft === 0 ? 'Trial ends today' : `Trial · ${trialDaysLeft}d left`}
+                                {trialDaysLeft === 0
+                                    ? 'Trial ends today'
+                                    : `Trial · ${trialDaysLeft}d left`}
                             </Text>
                         </View>
                     )}
@@ -74,43 +106,73 @@ const SubscriptionCard = ({ name, price, currency, iconKey, billing, color, cate
                         <View className="sub-row">
                             <View className="sub-row-copy">
                                 <Text className="sub-label">Payment:</Text>
-                                <Text className="sub-value" numberOfLines={1} ellipsizeMode="tail">{paymentMethod?.trim() || 'Not provided'}</Text>
+                                <Text className="sub-value" numberOfLines={1} ellipsizeMode="tail">
+                                    {paymentMethod?.trim() || 'Not provided'}
+                                </Text>
                             </View>
                         </View>
                         <View className="sub-row">
                             <View className="sub-row-copy">
                                 <Text className="sub-label">Category:</Text>
-                                <Text className="sub-value" numberOfLines={1} ellipsizeMode="tail">{category?.trim() || plan?.trim() || 'Not provided'}</Text>
+                                <Text className="sub-value" numberOfLines={1} ellipsizeMode="tail">
+                                    {category?.trim() || plan?.trim() || 'Not provided'}
+                                </Text>
                             </View>
                         </View>
                         <View className="sub-row">
                             <View className="sub-row-copy">
                                 <Text className="sub-label">Started:</Text>
-                                <Text className="sub-value" numberOfLines={1} ellipsizeMode="tail">{startDate ? formatSubscriptionDateTime(startDate) : 'Not provided'}</Text>
+                                <Text className="sub-value" numberOfLines={1} ellipsizeMode="tail">
+                                    {startDate
+                                        ? formatSubscriptionDateTime(startDate)
+                                        : 'Not provided'}
+                                </Text>
                             </View>
                         </View>
                         <View className="sub-row">
                             <View className="sub-row-copy">
-                                <Text className="sub-label">{onTrial ? 'First charge:' : 'Renewal date:'}</Text>
-                                <Text className="sub-value" numberOfLines={1} ellipsizeMode="tail">{renewalDate ? formatSubscriptionDateTime(renewalDate) : 'Not provided'}</Text>
+                                <Text className="sub-label">
+                                    {onTrial ? 'First charge:' : 'Renewal date:'}
+                                </Text>
+                                <Text className="sub-value" numberOfLines={1} ellipsizeMode="tail">
+                                    {renewalDate
+                                        ? formatSubscriptionDateTime(renewalDate)
+                                        : 'Not provided'}
+                                </Text>
                             </View>
                         </View>
                         <View className="sub-row">
                             <View className="sub-row-copy">
                                 <Text className="sub-label">Status:</Text>
-                                <Text className="sub-value" numberOfLines={1} ellipsizeMode="tail">{onTrial ? 'Free trial' : status ? formatStatusLabel(status) : 'Not provided'}</Text>
+                                <Text className="sub-value" numberOfLines={1} ellipsizeMode="tail">
+                                    {onTrial
+                                        ? 'Free trial'
+                                        : status
+                                          ? formatStatusLabel(status)
+                                          : 'Not provided'}
+                                </Text>
                             </View>
                         </View>
                     </View>
 
                     <View className="flex-row gap-3">
                         {onManagePress && (
-                            <Pressable className="sub-cancel flex-1" onPress={onManagePress} accessibilityRole="button" accessibilityLabel={`Manage ${name}`}>
+                            <Pressable
+                                className="sub-cancel flex-1"
+                                onPress={onManagePress}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Manage ${name}`}
+                            >
                                 <Text className="sub-cancel-text">Manage</Text>
                             </Pressable>
                         )}
                         {onDeletePress && (
-                            <Pressable className="sub-delete" onPress={onDeletePress} accessibilityRole="button" accessibilityLabel={`Delete ${name}`}>
+                            <Pressable
+                                className="sub-delete"
+                                onPress={onDeletePress}
+                                accessibilityRole="button"
+                                accessibilityLabel={`Delete ${name}`}
+                            >
                                 <Text className="sub-delete-text">Delete</Text>
                             </Pressable>
                         )}
@@ -118,6 +180,6 @@ const SubscriptionCard = ({ name, price, currency, iconKey, billing, color, cate
                 </View>
             )}
         </Pressable>
-    )
-}
-export default SubscriptionCard
+    );
+};
+export default SubscriptionCard;

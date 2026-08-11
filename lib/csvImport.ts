@@ -1,4 +1,9 @@
-import { CATEGORIES, type Category, type Frequency, type SubscriptionFormValues } from '@/lib/subscriptionTypes';
+import {
+    CATEGORIES,
+    type Category,
+    type Frequency,
+    type SubscriptionFormValues,
+} from '@/lib/subscriptionTypes';
 import { isSupportedCurrency } from '@/lib/currency';
 
 export interface ImportRow {
@@ -59,7 +64,9 @@ function columnIndex(headers: string[], ...aliases: string[]): number {
 
 function normaliseCategory(raw: string | undefined, warnings: string[]): Category {
     if (!raw) return 'Other';
-    const match = CATEGORIES.find((category) => category.toLowerCase() === raw.trim().toLowerCase());
+    const match = CATEGORIES.find(
+        (category) => category.toLowerCase() === raw.trim().toLowerCase(),
+    );
     if (match) return match;
 
     warnings.push(`Category "${raw}" isn't one of Lumora's — filed under Other`);
@@ -101,7 +108,14 @@ export function parseSubscriptionsCsv(text: string): ImportResult {
 
     const categoryIndex = columnIndex(headers, 'category', 'type', 'plan');
     const currencyIndex = columnIndex(headers, 'currency', 'ccy');
-    const billingIndex = columnIndex(headers, 'billing', 'frequency', 'cycle', 'interval', 'period');
+    const billingIndex = columnIndex(
+        headers,
+        'billing',
+        'frequency',
+        'cycle',
+        'interval',
+        'period',
+    );
     const paymentIndex = columnIndex(headers, 'paymentmethod', 'payment', 'card', 'paidwith');
 
     const rows: ImportRow[] = [];
@@ -126,16 +140,23 @@ export function parseSubscriptionsCsv(text: string): ImportResult {
             return;
         }
 
-        const currency = currencyIndex === -1 ? undefined : cells[currencyIndex]?.trim().toUpperCase();
+        const currency =
+            currencyIndex === -1 ? undefined : cells[currencyIndex]?.trim().toUpperCase();
 
         rows.push({
             values: {
                 name: name.slice(0, 60),
                 price,
-                frequency: normaliseFrequency(billingIndex === -1 ? undefined : cells[billingIndex]),
-                category: normaliseCategory(categoryIndex === -1 ? undefined : cells[categoryIndex], warnings),
+                frequency: normaliseFrequency(
+                    billingIndex === -1 ? undefined : cells[billingIndex],
+                ),
+                category: normaliseCategory(
+                    categoryIndex === -1 ? undefined : cells[categoryIndex],
+                    warnings,
+                ),
                 currency: isSupportedCurrency(currency) ? currency : undefined,
-                paymentMethod: paymentIndex === -1 ? undefined : cells[paymentIndex]?.trim() || undefined,
+                paymentMethod:
+                    paymentIndex === -1 ? undefined : cells[paymentIndex]?.trim() || undefined,
             },
             warnings,
         });
@@ -147,5 +168,9 @@ export function parseSubscriptionsCsv(text: string): ImportResult {
 /** Rows whose name already exists, so an import can't quietly double everything up. */
 export function findImportDuplicates(rows: ImportRow[], existingNames: string[]): Set<string> {
     const existing = new Set(existingNames.map((name) => name.trim().toLowerCase()));
-    return new Set(rows.filter((row) => existing.has(row.values.name.toLowerCase())).map((row) => row.values.name));
+    return new Set(
+        rows
+            .filter((row) => existing.has(row.values.name.toLowerCase()))
+            .map((row) => row.values.name),
+    );
 }

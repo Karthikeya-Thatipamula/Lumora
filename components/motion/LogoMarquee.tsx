@@ -1,9 +1,26 @@
 import { icons, IconKey } from '@/constants/icons';
 import { useEffect } from 'react';
 import { Image, View } from 'react-native';
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import Animated, {
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withTiming,
+} from 'react-native-reanimated';
 
-const MARQUEE_ICONS: IconKey[] = ['spotify', 'notion', 'figma', 'github', 'openai', 'claude', 'adobe', 'canva', 'dropbox', 'medium'];
+const MARQUEE_ICONS: IconKey[] = [
+    'spotify',
+    'notion',
+    'figma',
+    'github',
+    'openai',
+    'claude',
+    'adobe',
+    'canva',
+    'dropbox',
+    'medium',
+];
 
 const ITEM_SIZE = 44;
 const ITEM_GAP = 24;
@@ -23,7 +40,7 @@ const LogoMarquee = () => {
         offset.value = withRepeat(
             withTiming(-TRACK_WIDTH, { duration: 18000, easing: Easing.linear }),
             -1,
-            false
+            false,
         );
     }, [offset]);
 
@@ -32,7 +49,11 @@ const LogoMarquee = () => {
     }));
 
     return (
-        <View style={{ height: ITEM_SIZE, overflow: 'hidden' }} pointerEvents="none" accessibilityElementsHidden>
+        <View
+            style={{ height: ITEM_SIZE, overflow: 'hidden' }}
+            pointerEvents="none"
+            accessibilityElementsHidden
+        >
             <Animated.View style={[{ flexDirection: 'row', gap: ITEM_GAP }, animatedStyle]}>
                 {[...MARQUEE_ICONS, ...MARQUEE_ICONS].map((key, index) => (
                     // Several of these marks are solid black (GitHub, Notion, Medium,

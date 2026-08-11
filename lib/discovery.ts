@@ -56,7 +56,7 @@ export function getDiscoveryPrompts(subscriptions: Subscription[], limit = 3): D
         quickAdds: SUBSCRIPTION_CATALOG.filter(
             (entry) =>
                 !tracked.has(entry.name.toLowerCase()) &&
-                group.signals.some((signal) => entry.name.toLowerCase().includes(signal))
+                group.signals.some((signal) => entry.name.toLowerCase().includes(signal)),
         ),
     }));
 }
@@ -71,7 +71,7 @@ export function getCancellationUrl(subscriptionName: string): string | null {
     if (!needle) return null;
 
     const match = SUBSCRIPTION_CATALOG.find(
-        (entry) => entry.name.toLowerCase() === needle || needle.includes(entry.name.toLowerCase())
+        (entry) => entry.name.toLowerCase() === needle || needle.includes(entry.name.toLowerCase()),
     );
 
     return match?.cancelUrl ?? null;

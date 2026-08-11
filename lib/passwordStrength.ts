@@ -27,7 +27,13 @@ export function describePasswordStrength(password: string): PasswordStrength {
     }
 
     const labels = ['Weak', 'Weak', 'Fair', 'Good', 'Strong'];
-    const palette = [colors.destructive, colors.destructive, '#e0a72b', colors.success, colors.success];
+    const palette = [
+        colors.destructive,
+        colors.destructive,
+        '#e0a72b',
+        colors.success,
+        colors.success,
+    ];
 
     return { score, label: labels[score], color: palette[score] };
 }

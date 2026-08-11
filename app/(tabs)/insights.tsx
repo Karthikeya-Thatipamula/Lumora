@@ -46,7 +46,7 @@ import dayjs from 'dayjs';
 import { usePostHog } from 'posthog-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, Text, View } from 'react-native';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Insights = () => {
     const posthog = usePostHog();
@@ -69,12 +69,18 @@ const Insights = () => {
     const forecast = useMemo(() => getForecast(subscriptions), [subscriptions]);
     const statusCounts = useMemo(() => getStatusCounts(subscriptions), [subscriptions]);
     const mostExpensive = useMemo(() => getMostExpensive(subscriptions), [subscriptions]);
-    const duplicateCategories = useMemo(() => detectDuplicateCategories(subscriptions), [subscriptions]);
+    const duplicateCategories = useMemo(
+        () => detectDuplicateCategories(subscriptions),
+        [subscriptions],
+    );
     const stalePaused = useMemo(() => detectStalePaused(subscriptions), [subscriptions]);
     const priceHikes = useMemo(() => detectPriceHikes(subscriptions), [subscriptions]);
     const savings = useMemo(() => getReclaimedSavings(subscriptions), [subscriptions]);
     const trialCommitment = useMemo(() => getTrialCommitment(subscriptions), [subscriptions]);
-    const annualUpgrades = useMemo(() => detectAnnualUpgradeCandidates(subscriptions), [subscriptions]);
+    const annualUpgrades = useMemo(
+        () => detectAnnualUpgradeCandidates(subscriptions),
+        [subscriptions],
+    );
     const sharingSavings = useMemo(() => getSharingSavings(subscriptions), [subscriptions]);
     const mixedCurrencies = useMemo(() => hasMixedCurrencies(subscriptions), [subscriptions]);
     const spendHistory = useMemo(() => getSpendHistory(subscriptions, 6), [subscriptions]);
@@ -83,16 +89,16 @@ const Insights = () => {
     const unused = useMemo(() => getUnusedSubscriptions(subscriptions), [subscriptions]);
     const poorValue = useMemo(
         () => getUsageRanking(subscriptions).filter((entry) => entry.costPerUse.isPoorValue),
-        [subscriptions]
+        [subscriptions],
     );
     const incomeContext = useMemo(
         () => getIncomeContext(subscriptions, monthlyIncome),
-        [subscriptions, monthlyIncome]
+        [subscriptions, monthlyIncome],
     );
     const calendarAnchor = useMemo(() => dayjs().add(monthOffset, 'month'), [monthOffset]);
     const calendarDays = useMemo(
         () => getRenewalCalendar(subscriptions, calendarAnchor),
-        [subscriptions, calendarAnchor]
+        [subscriptions, calendarAnchor],
     );
     const spendTrend = useMemo(() => getSpendTrend(spendHistory), [spendHistory]);
 
@@ -114,7 +120,8 @@ const Insights = () => {
                 <View className="auth-card items-center gap-2 py-10">
                     <Text style={{ fontSize: 32 }}>📊</Text>
                     <Text className="text-center text-sm font-sans-medium text-muted-foreground">
-                        Add an active subscription to unlock spending insights, forecasts, and smart suggestions.
+                        Add an active subscription to unlock spending insights, forecasts, and smart
+                        suggestions.
                     </Text>
                 </View>
             </SafeAreaView>
@@ -123,16 +130,29 @@ const Insights = () => {
 
     return (
         <SafeAreaView className="flex-1 bg-background">
-            <ScrollView className="flex-1 px-5 pt-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ gap: 20, paddingBottom: getTabBarContentInset(insets.bottom) }}>
+            <ScrollView
+                className="flex-1 px-5 pt-5"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{
+                    gap: 20,
+                    paddingBottom: getTabBarContentInset(insets.bottom),
+                }}
+            >
                 <Text className="text-3xl font-sans-bold text-primary">Insights</Text>
 
-                <SpendSummaryCard monthlyTotal={monthlySpend} yearlyTotal={yearlySpend} activeCount={statusCounts.active} trialCount={trialCount} currency={currency} />
+                <SpendSummaryCard
+                    monthlyTotal={monthlySpend}
+                    yearlyTotal={yearlySpend}
+                    activeCount={statusCounts.active}
+                    trialCount={trialCount}
+                    currency={currency}
+                />
 
                 {mixedCurrencies && (
                     <View className="rounded-2xl border border-border bg-card p-4">
                         <Text className="text-xs font-sans-medium text-muted-foreground">
-                            You track subscriptions in more than one currency. Totals below add the raw
-                            amounts together without converting, so treat them as a rough guide.
+                            You track subscriptions in more than one currency. Totals below add the
+                            raw amounts together without converting, so treat them as a rough guide.
                         </Text>
                     </View>
                 )}
@@ -147,7 +167,12 @@ const Insights = () => {
                     currency={currency}
                 />
 
-                <SavingsCard savings={savings} trialCommitment={trialCommitment} sharingSavings={sharingSavings} currency={currency} />
+                <SavingsCard
+                    savings={savings}
+                    trialCommitment={trialCommitment}
+                    sharingSavings={sharingSavings}
+                    currency={currency}
+                />
 
                 <CategoryBreakdownChart breakdown={breakdown} currency={currency} />
 
@@ -167,15 +192,31 @@ const Insights = () => {
                     onSave={(budget) => updateSettings({ monthlyBudget: budget })}
                 />
 
-                <ProGate isPro={isPro} title="6-Month Forecast" description="See where your spending is headed if nothing changes.">
+                <ProGate
+                    isPro={isPro}
+                    title="6-Month Forecast"
+                    description="See where your spending is headed if nothing changes."
+                >
                     <ForecastChart forecast={forecast} currency={currency} />
                 </ProGate>
 
-                <ProGate isPro={isPro} title="Spend Over Time" description="Six months of your real spending, rebuilt from your own history.">
-                    <SpendTrendChart history={spendHistory} trend={spendTrend} currency={currency} />
+                <ProGate
+                    isPro={isPro}
+                    title="Spend Over Time"
+                    description="Six months of your real spending, rebuilt from your own history."
+                >
+                    <SpendTrendChart
+                        history={spendHistory}
+                        trend={spendTrend}
+                        currency={currency}
+                    />
                 </ProGate>
 
-                <ProGate isPro={isPro} title="Smart Suggestions" description="Duplicate categories, stale pauses, and price hikes — spotted automatically.">
+                <ProGate
+                    isPro={isPro}
+                    title="Smart Suggestions"
+                    description="Duplicate categories, stale pauses, and price hikes — spotted automatically."
+                >
                     <SmartSuggestionsCard
                         duplicateCategories={duplicateCategories}
                         stalePaused={stalePaused}
@@ -187,7 +228,11 @@ const Insights = () => {
                     />
                 </ProGate>
 
-                <ProGate isPro={isPro} title="Wrapped" description="A shareable recap of your year in subscriptions.">
+                <ProGate
+                    isPro={isPro}
+                    title="Wrapped"
+                    description="A shareable recap of your year in subscriptions."
+                >
                     <WrappedCard
                         yearlyTotal={yearlySpend}
                         activeCount={statusCounts.active}
@@ -201,6 +246,6 @@ const Insights = () => {
                 <InviteCard reclaimedYearly={savings.yearly} currency={currency} />
             </ScrollView>
         </SafeAreaView>
-    )
-}
-export default Insights
+    );
+};
+export default Insights;

@@ -60,7 +60,9 @@ const SpendTrendChart = ({ history, trend, currency }: SpendTrendChartProps) => 
                 xAxisLabelTextStyle={{ color: themeColors.mutedForeground, fontSize: 11 }}
                 yAxisTextStyle={{ color: themeColors.mutedForeground, fontSize: 10 }}
                 yAxisLabelWidth={44}
-                formatYLabel={(value: string) => formatCurrency(Number(value), currency).replace('.00', '')}
+                formatYLabel={(value: string) =>
+                    formatCurrency(Number(value), currency).replace('.00', '')
+                }
                 initialSpacing={12}
                 isAnimated
             />

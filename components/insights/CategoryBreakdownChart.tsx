@@ -48,9 +48,14 @@ const CategoryBreakdownChart = ({ breakdown, currency }: CategoryBreakdownChartP
                 fontWeight="700"
                 centerLabelComponent={() => (
                     <View className="items-center">
-                        <Text className="text-xs font-sans-semibold text-muted-foreground">Monthly</Text>
+                        <Text className="text-xs font-sans-semibold text-muted-foreground">
+                            Monthly
+                        </Text>
                         <Text className="text-lg font-sans-extrabold text-primary">
-                            {formatCurrency(breakdown.reduce((sum, e) => sum + e.monthlyTotal, 0), currency)}
+                            {formatCurrency(
+                                breakdown.reduce((sum, e) => sum + e.monthlyTotal, 0),
+                                currency,
+                            )}
                         </Text>
                     </View>
                 )}
@@ -60,11 +65,20 @@ const CategoryBreakdownChart = ({ breakdown, currency }: CategoryBreakdownChartP
                 {breakdown.map((entry) => (
                     <View key={entry.category} className="flex-row items-center justify-between">
                         <View className="flex-row items-center gap-2">
-                            <View className="size-3 rounded-full" style={{ backgroundColor: colorFor(entry.category) }} />
-                            <Text className="text-sm font-sans-semibold text-primary">{entry.category}</Text>
-                            <Text className="text-xs font-sans-medium text-muted-foreground">({entry.count})</Text>
+                            <View
+                                className="size-3 rounded-full"
+                                style={{ backgroundColor: colorFor(entry.category) }}
+                            />
+                            <Text className="text-sm font-sans-semibold text-primary">
+                                {entry.category}
+                            </Text>
+                            <Text className="text-xs font-sans-medium text-muted-foreground">
+                                ({entry.count})
+                            </Text>
                         </View>
-                        <Text className="text-sm font-sans-bold text-primary">{formatCurrency(entry.monthlyTotal, currency)}</Text>
+                        <Text className="text-sm font-sans-bold text-primary">
+                            {formatCurrency(entry.monthlyTotal, currency)}
+                        </Text>
                     </View>
                 ))}
             </View>

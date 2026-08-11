@@ -37,8 +37,15 @@ const UsageTracker = ({
             info="Tap every time you actually use this. Lumora divides what you've paid since you started counting by the number of uses, so you can see what each one really costs."
             action={
                 usageCount > 0 ? (
-                    <PressableScale onPress={onReset} accessibilityRole="button" accessibilityLabel="Reset usage count" hitSlop={12}>
-                        <Text className="text-xs font-sans-semibold text-muted-foreground">Reset</Text>
+                    <PressableScale
+                        onPress={onReset}
+                        accessibilityRole="button"
+                        accessibilityLabel="Reset usage count"
+                        hitSlop={12}
+                    >
+                        <Text className="text-xs font-sans-semibold text-muted-foreground">
+                            Reset
+                        </Text>
                     </PressableScale>
                 ) : undefined
             }
@@ -74,13 +81,14 @@ const UsageTracker = ({
                 </Text>
                 <Text className="text-sm font-sans-medium text-muted-foreground">
                     {costPerUse.uses} {costPerUse.uses === 1 ? 'use' : 'uses'} over{' '}
-                    {costPerUse.monthsTracked} {costPerUse.monthsTracked === 1 ? 'month' : 'months'}.
+                    {costPerUse.monthsTracked} {costPerUse.monthsTracked === 1 ? 'month' : 'months'}
+                    .
                 </Text>
                 {costPerUse.isPoorValue && (
                     <View className="mt-1 rounded-2xl border border-destructive/30 bg-destructive/10 p-3">
                         <Text className="text-xs font-sans-semibold text-destructive">
-                            Each use costs more than a whole month of the plan
-                            {' '}({formatCurrency(monthlyEquivalent, currency)}). Worth a hard look.
+                            Each use costs more than a whole month of the plan (
+                            {formatCurrency(monthlyEquivalent, currency)}). Worth a hard look.
                         </Text>
                     </View>
                 )}

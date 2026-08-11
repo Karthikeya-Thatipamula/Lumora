@@ -9,12 +9,7 @@
 export type Frequency = 'Monthly' | 'Yearly';
 
 export type Category =
-    | 'Entertainment'
-    | 'AI Tools'
-    | 'Developer Tools'
-    | 'Design'
-    | 'Productivity'
-    | 'Other';
+    'Entertainment' | 'AI Tools' | 'Developer Tools' | 'Design' | 'Productivity' | 'Other';
 
 export const CATEGORIES: Category[] = [
     'Entertainment',
@@ -26,12 +21,12 @@ export const CATEGORIES: Category[] = [
 ];
 
 export const CATEGORY_COLORS: Record<Category, string> = {
-    'Entertainment': '#ff6b6b',
+    Entertainment: '#ff6b6b',
     'AI Tools': '#b8d4e3',
     'Developer Tools': '#e8def8',
-    'Design': '#f5c542',
-    'Productivity': '#95e1d3',
-    'Other': '#d4d4d4',
+    Design: '#f5c542',
+    Productivity: '#95e1d3',
+    Other: '#d4d4d4',
 };
 
 export const TRIAL_LENGTH_OPTIONS = [7, 14, 30] as const;

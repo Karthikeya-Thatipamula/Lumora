@@ -35,7 +35,9 @@ const SpendRatesCard = ({ rates, currency }: SpendRatesCardProps) => (
                         value={rates[row.key]}
                         format={(amount) => formatCurrency(amount, currency)}
                     />
-                    <Text className="mt-0.5 text-xs font-sans-medium text-muted-foreground">{row.label}</Text>
+                    <Text className="mt-0.5 text-xs font-sans-medium text-muted-foreground">
+                        {row.label}
+                    </Text>
                 </View>
             ))}
         </View>

@@ -16,11 +16,14 @@ import { join, relative } from 'node:path';
 const FORBIDDEN = [
     {
         pattern: /<Animated\.(View|Text|ScrollView|Image|FlatList)\b[^>]*\bclassName=/s,
-        message: 'Animated.* with className — import { AnimatedView, AnimatedText } from "@/components/motion/Animated" instead.',
+        message:
+            'Animated.* with className — import { AnimatedView, AnimatedText } from "@/components/motion/Animated" instead.',
     },
     {
-        pattern: /from ['"]react-native-safe-area-context['"][\s\S]{0,200}?<SafeAreaView\b[^>]*\bclassName=/,
-        message: 'Raw SafeAreaView with className — import { SafeAreaView } from "@/components/SafeAreaView" instead.',
+        pattern:
+            /from ['"]react-native-safe-area-context['"][\s\S]{0,200}?<SafeAreaView\b[^>]*\bclassName=/,
+        message:
+            'Raw SafeAreaView with className — import { SafeAreaView } from "@/components/SafeAreaView" instead.',
     },
     {
         pattern: /createAnimatedComponent\([^)]*\)[\s\S]{0,400}?\bclassName=/,
@@ -33,7 +36,8 @@ function collect(dir, out = []) {
     for (const entry of readdirSync(dir)) {
         const full = join(dir, entry);
         if (statSync(full).isDirectory()) collect(full, out);
-        else if (entry.endsWith('.tsx')) out.push(relative(process.cwd(), full).split('\\').join('/'));
+        else if (entry.endsWith('.tsx'))
+            out.push(relative(process.cwd(), full).split('\\').join('/'));
     }
     return out;
 }
@@ -43,7 +47,11 @@ let failures = 0;
 
 for (const file of files) {
     // The styled wrappers themselves are the sanctioned exception.
-    if (file.endsWith('components/motion/Animated.tsx') || file.endsWith('components/SafeAreaView.tsx')) continue;
+    if (
+        file.endsWith('components/motion/Animated.tsx') ||
+        file.endsWith('components/SafeAreaView.tsx')
+    )
+        continue;
 
     const source = readFileSync(file, 'utf8');
     for (const { pattern, message } of FORBIDDEN) {

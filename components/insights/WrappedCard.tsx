@@ -17,7 +17,14 @@ interface WrappedCardProps {
     currency?: string;
 }
 
-const WrappedCard = ({ yearlyTotal, activeCount, topCategory, mostExpensive, reclaimedYearly, currency }: WrappedCardProps) => {
+const WrappedCard = ({
+    yearlyTotal,
+    activeCount,
+    topCategory,
+    mostExpensive,
+    reclaimedYearly,
+    currency,
+}: WrappedCardProps) => {
     const shotRef = useRef<ViewShot>(null);
     const [isSharing, setIsSharing] = useState(false);
     const posthog = usePostHog();
@@ -35,7 +42,11 @@ const WrappedCard = ({ yearlyTotal, activeCount, topCategory, mostExpensive, rec
                     UTI: 'public.png',
                     dialogTitle: 'My Lumora Wrapped',
                 });
-                posthog.capture('wrapped_shared', { year, yearly_total: yearlyTotal, reclaimed_yearly: reclaimedYearly });
+                posthog.capture('wrapped_shared', {
+                    year,
+                    yearly_total: yearlyTotal,
+                    reclaimed_yearly: reclaimedYearly,
+                });
             } else {
                 alertDialog('Sharing unavailable', 'Sharing isn’t supported on this device.');
             }
@@ -52,26 +63,42 @@ const WrappedCard = ({ yearlyTotal, activeCount, topCategory, mostExpensive, rec
 
             <ViewShot ref={shotRef} options={{ format: 'png', quality: 0.95 }}>
                 <View className="gap-5 rounded-3xl bg-primary p-6">
-                    <Text className="text-sm font-sans-semibold uppercase tracking-[1px] text-white/60">Lumora Wrapped {year}</Text>
+                    <Text className="text-sm font-sans-semibold uppercase tracking-[1px] text-white/60">
+                        Lumora Wrapped {year}
+                    </Text>
                     <View>
-                        <Text className="text-4xl font-sans-extrabold text-white">{formatCurrency(yearlyTotal, currency)}</Text>
-                        <Text className="text-base font-sans-medium text-white/70">spent across {activeCount} active subscriptions</Text>
+                        <Text className="text-4xl font-sans-extrabold text-white">
+                            {formatCurrency(yearlyTotal, currency)}
+                        </Text>
+                        <Text className="text-base font-sans-medium text-white/70">
+                            spent across {activeCount} active subscriptions
+                        </Text>
                     </View>
                     {topCategory && (
                         <View>
-                            <Text className="text-sm font-sans-semibold text-white/60">Top category</Text>
-                            <Text className="text-xl font-sans-bold text-white">{topCategory.category}</Text>
+                            <Text className="text-sm font-sans-semibold text-white/60">
+                                Top category
+                            </Text>
+                            <Text className="text-xl font-sans-bold text-white">
+                                {topCategory.category}
+                            </Text>
                         </View>
                     )}
                     {mostExpensive && (
                         <View>
-                            <Text className="text-sm font-sans-semibold text-white/60">Biggest subscription</Text>
-                            <Text className="text-xl font-sans-bold text-white">{mostExpensive.name}</Text>
+                            <Text className="text-sm font-sans-semibold text-white/60">
+                                Biggest subscription
+                            </Text>
+                            <Text className="text-xl font-sans-bold text-white">
+                                {mostExpensive.name}
+                            </Text>
                         </View>
                     )}
                     {reclaimedYearly > 0 && (
                         <View>
-                            <Text className="text-sm font-sans-semibold text-white/60">Reclaimed with Lumora</Text>
+                            <Text className="text-sm font-sans-semibold text-white/60">
+                                Reclaimed with Lumora
+                            </Text>
                             <Text className="text-xl font-sans-bold text-success">
                                 {formatCurrency(reclaimedYearly, currency)}/year
                             </Text>
@@ -80,8 +107,16 @@ const WrappedCard = ({ yearlyTotal, activeCount, topCategory, mostExpensive, rec
                 </View>
             </ViewShot>
 
-            <Pressable className="auth-button" onPress={handleShare} disabled={isSharing} accessibilityRole="button" accessibilityLabel="Share your Wrapped recap">
-                <Text className="auth-button-text">{isSharing ? 'Preparing...' : 'Share Your Wrapped'}</Text>
+            <Pressable
+                className="auth-button"
+                onPress={handleShare}
+                disabled={isSharing}
+                accessibilityRole="button"
+                accessibilityLabel="Share your Wrapped recap"
+            >
+                <Text className="auth-button-text">
+                    {isSharing ? 'Preparing...' : 'Share Your Wrapped'}
+                </Text>
             </Pressable>
         </View>
     );

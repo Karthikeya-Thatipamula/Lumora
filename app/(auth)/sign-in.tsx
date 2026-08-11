@@ -7,7 +7,15 @@ import { useSignIn } from '@clerk/expo';
 import { Link } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    Text,
+    View,
+} from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { AnimatedView } from '@/components/motion/Animated';
 
@@ -23,7 +31,8 @@ const SignIn = () => {
     const [emailTouched, setEmailTouched] = useState(false);
     const [passwordTouched, setPasswordTouched] = useState(false);
 
-    const emailValid = emailAddress.length === 0 || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress.trim());
+    const emailValid =
+        emailAddress.length === 0 || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress.trim());
     const passwordValid = password.length > 0;
     const formValid = emailAddress.trim().length > 0 && password.length > 0 && emailValid;
     const isBusy = fetchStatus === 'fetching';
@@ -40,7 +49,10 @@ const SignIn = () => {
             });
 
             if (error) {
-                const message = getClerkErrorMessage(error, 'Unable to sign in. Please check your details and try again.');
+                const message = getClerkErrorMessage(
+                    error,
+                    'Unable to sign in. Please check your details and try again.',
+                );
                 setSubmitError(message);
                 posthog.capture('user_sign_in_failed', { error_message: message });
                 return;
@@ -62,7 +74,7 @@ const SignIn = () => {
                 setSubmitError('Two-factor authentication isn’t supported in this build yet.');
             } else if (signIn.status === 'needs_client_trust') {
                 const emailCodeFactor = signIn.supportedSecondFactors.find(
-                    (factor) => factor.strategy === 'email_code'
+                    (factor) => factor.strategy === 'email_code',
                 );
 
                 if (emailCodeFactor) {
@@ -74,7 +86,10 @@ const SignIn = () => {
                 setSubmitError('Additional verification is required to complete sign in.');
             }
         } catch (err) {
-            const message = getClerkErrorMessage(err, 'Unable to sign in. Please check your details and try again.');
+            const message = getClerkErrorMessage(
+                err,
+                'Unable to sign in. Please check your details and try again.',
+            );
             setSubmitError(message);
             posthog.capture('user_sign_in_error', { error_message: message });
         }
@@ -101,7 +116,10 @@ const SignIn = () => {
                 setSubmitError('Verification is not complete yet. Please try again.');
             }
         } catch (err) {
-            const message = getClerkErrorMessage(err, 'Verification failed. Please check the code and try again.');
+            const message = getClerkErrorMessage(
+                err,
+                'Verification failed. Please check the code and try again.',
+            );
             setSubmitError(message);
             posthog.capture('user_verification_failed', { error_message: message });
         }
@@ -112,8 +130,15 @@ const SignIn = () => {
         return (
             <SafeAreaView className="auth-safe-area">
                 <AuroraBackground />
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="auth-screen">
-                    <ScrollView className="auth-scroll" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    className="auth-screen"
+                >
+                    <ScrollView
+                        className="auth-scroll"
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator={false}
+                    >
                         <AnimatedView entering={FadeInDown.duration(400)} className="auth-content">
                             <View className="auth-brand-block">
                                 <LumoraWordmark />
@@ -155,7 +180,9 @@ const SignIn = () => {
                                         disabled={isBusy}
                                         accessibilityRole="button"
                                     >
-                                        <Text className="auth-secondary-button-text">Resend Code</Text>
+                                        <Text className="auth-secondary-button-text">
+                                            Resend Code
+                                        </Text>
                                     </Pressable>
 
                                     <Pressable
@@ -164,7 +191,9 @@ const SignIn = () => {
                                         disabled={isBusy}
                                         accessibilityRole="button"
                                     >
-                                        <Text className="auth-secondary-button-text">Start Over</Text>
+                                        <Text className="auth-secondary-button-text">
+                                            Start Over
+                                        </Text>
                                     </Pressable>
                                 </View>
                             </View>
@@ -179,16 +208,31 @@ const SignIn = () => {
         <SafeAreaView className="auth-safe-area">
             <AuroraBackground />
 
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="auth-screen">
-                <ScrollView className="auth-scroll" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                className="auth-screen"
+            >
+                <ScrollView
+                    className="auth-scroll"
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
                     <View className="auth-content">
-                        <AnimatedView entering={FadeInDown.duration(500)} className="auth-brand-block">
+                        <AnimatedView
+                            entering={FadeInDown.duration(500)}
+                            className="auth-brand-block"
+                        >
                             <LumoraWordmark />
                             <Text className="auth-title mt-7">Welcome back</Text>
-                            <Text className="auth-subtitle">Every renewal, trial and price hike — back in view.</Text>
+                            <Text className="auth-subtitle">
+                                Every renewal, trial and price hike — back in view.
+                            </Text>
                         </AnimatedView>
 
-                        <AnimatedView entering={FadeInDown.duration(500).delay(120)} className="auth-card">
+                        <AnimatedView
+                            entering={FadeInDown.duration(500).delay(120)}
+                            className="auth-card"
+                        >
                             <View className="auth-form">
                                 <AuthTextField
                                     label="Email Address"
@@ -200,7 +244,9 @@ const SignIn = () => {
                                     keyboardType="email-address"
                                     autoComplete="email"
                                     error={
-                                        (emailTouched && !emailValid && 'Please enter a valid email address') ||
+                                        (emailTouched &&
+                                            !emailValid &&
+                                            'Please enter a valid email address') ||
                                         errors.fields.identifier?.message ||
                                         null
                                     }
@@ -215,15 +261,22 @@ const SignIn = () => {
                                     onBlur={() => setPasswordTouched(true)}
                                     autoComplete="password"
                                     error={
-                                        (passwordTouched && !passwordValid && 'Password is required') ||
+                                        (passwordTouched &&
+                                            !passwordValid &&
+                                            'Password is required') ||
                                         errors.fields.password?.message ||
                                         null
                                     }
                                 />
 
                                 {submitError && (
-                                    <AnimatedView entering={FadeIn.duration(200)} className="auth-banner-error">
-                                        <Text className="auth-banner-error-text">{submitError}</Text>
+                                    <AnimatedView
+                                        entering={FadeIn.duration(200)}
+                                        className="auth-banner-error"
+                                    >
+                                        <Text className="auth-banner-error-text">
+                                            {submitError}
+                                        </Text>
                                     </AnimatedView>
                                 )}
 
@@ -253,7 +306,9 @@ const SignIn = () => {
                                 </Link>
                             </View>
 
-                            <Text className="auth-trust">🔒 Encrypted in transit · Never sold or shared</Text>
+                            <Text className="auth-trust">
+                                🔒 Encrypted in transit · Never sold or shared
+                            </Text>
                         </Animated.View>
                     </View>
                 </ScrollView>

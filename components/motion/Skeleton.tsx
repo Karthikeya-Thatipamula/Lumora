@@ -1,5 +1,11 @@
 import { View, ViewProps } from 'react-native';
-import { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import {
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withTiming,
+} from 'react-native-reanimated';
 import { useEffect } from 'react';
 import { AnimatedView } from '@/components/motion/Animated';
 
@@ -18,20 +24,29 @@ export const Skeleton = ({ className, style, ...props }: SkeletonProps) => {
         opacity.value = withRepeat(
             withTiming(0.85, { duration: 850, easing: Easing.inOut(Easing.quad) }),
             -1,
-            true
+            true,
         );
     }, [opacity]);
 
     const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
-    return <AnimatedView className={`rounded-2xl bg-muted ${className ?? ''}`} style={[animatedStyle, style]} {...props} />;
+    return (
+        <AnimatedView
+            className={`rounded-2xl bg-muted ${className ?? ''}`}
+            style={[animatedStyle, style]}
+            {...props}
+        />
+    );
 };
 
 /** Stand-in for the subscription list while it loads. */
 export const SubscriptionListSkeleton = ({ count = 3 }: { count?: number }) => (
     <View className="gap-4" accessibilityLabel="Loading subscriptions">
         {Array.from({ length: count }, (_, index) => (
-            <View key={index} className="flex-row items-center gap-3 rounded-2xl border border-border bg-card p-4">
+            <View
+                key={index}
+                className="flex-row items-center gap-3 rounded-2xl border border-border bg-card p-4"
+            >
                 <Skeleton className="size-16 rounded-lg" />
                 <View className="flex-1 gap-2">
                     <Skeleton className="h-4 w-1/2" />

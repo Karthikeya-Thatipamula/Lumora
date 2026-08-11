@@ -1,9 +1,19 @@
-import { View, Text, Modal, Pressable, TextInput, KeyboardAvoidingView, Platform, ScrollView, Switch } from 'react-native';
+import {
+    View,
+    Text,
+    Modal,
+    Pressable,
+    TextInput,
+    KeyboardAvoidingView,
+    Platform,
+    ScrollView,
+    Switch,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import dayjs from 'dayjs';
-import {posthog} from "@/src/config/posthog";
+import { posthog } from '@/src/config/posthog';
 import { availableCatalogEntries, CatalogEntry } from '@/constants/catalog';
 import { currencySymbol, DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/lib/currency';
 import {
@@ -60,14 +70,16 @@ const CreateSubscriptionModal = ({
     const [category, setCategory] = useState<Category>(initialValues?.category ?? 'Other');
     const [currency, setCurrency] = useState(initialValues?.currency ?? defaultCurrency);
     const [isTrial, setIsTrial] = useState(initialValues?.isTrial ?? false);
-    const [trialDays, setTrialDays] = useState<number>(initialValues?.trialDays ?? DEFAULT_TRIAL_LENGTH);
+    const [trialDays, setTrialDays] = useState<number>(
+        initialValues?.trialDays ?? DEFAULT_TRIAL_LENGTH,
+    );
     const [householdSize, setHouseholdSize] = useState<number>(initialValues?.householdSize ?? 1);
     const [paymentMethod, setPaymentMethod] = useState(initialValues?.paymentMethod ?? '');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const quickAdds = useMemo(
         () => (mode === 'create' ? availableCatalogEntries(existingNames).slice(0, 8) : []),
-        [mode, existingNames]
+        [mode, existingNames],
     );
 
     // Reset only on the closed → open transition. Keying off `initialValues` directly
@@ -182,12 +194,7 @@ const CreateSubscriptionModal = ({
     };
 
     return (
-        <Modal
-            visible={visible}
-            transparent
-            animationType="slide"
-            onRequestClose={handleClose}
-        >
+        <Modal visible={visible} transparent animationType="slide" onRequestClose={handleClose}>
             {/* `height` behaviour on Android inside a Modal fights the window resize and
                 collapses the sheet; Android handles the keyboard itself, so only iOS opts in. */}
             <KeyboardAvoidingView
@@ -197,8 +204,15 @@ const CreateSubscriptionModal = ({
                 <Pressable className="modal-overlay" onPress={handleClose}>
                     <Pressable className="modal-container" onPress={(e) => e.stopPropagation()}>
                         <View className="modal-header">
-                            <Text className="modal-title">{mode === 'create' ? 'New Subscription' : 'Edit Subscription'}</Text>
-                            <Pressable className="modal-close" onPress={handleClose} accessibilityRole="button" accessibilityLabel="Close">
+                            <Text className="modal-title">
+                                {mode === 'create' ? 'New Subscription' : 'Edit Subscription'}
+                            </Text>
+                            <Pressable
+                                className="modal-close"
+                                onPress={handleClose}
+                                accessibilityRole="button"
+                                accessibilityLabel="Close"
+                            >
                                 <Text className="modal-close-text">✕</Text>
                             </Pressable>
                         </View>
@@ -236,12 +250,15 @@ const CreateSubscriptionModal = ({
                                                 accessibilityRole="button"
                                                 accessibilityLabel={`Prefill ${entry.name}`}
                                             >
-                                                <Text className="category-chip-text">{entry.name}</Text>
+                                                <Text className="category-chip-text">
+                                                    {entry.name}
+                                                </Text>
                                             </Pressable>
                                         ))}
                                     </ScrollView>
                                     <Text className="text-xs font-sans-medium text-muted-foreground">
-                                        Tap to prefill typical pricing — edit anything before saving.
+                                        Tap to prefill typical pricing — edit anything before
+                                        saving.
                                     </Text>
                                 </View>
                             )}
@@ -260,7 +277,9 @@ const CreateSubscriptionModal = ({
                                     maxLength={MAX_NAME_LENGTH}
                                 />
                                 {duplicateWarning && (
-                                    <Text className="text-xs font-sans-semibold text-accent">{duplicateWarning}</Text>
+                                    <Text className="text-xs font-sans-semibold text-accent">
+                                        {duplicateWarning}
+                                    </Text>
                                 )}
                             </View>
 
@@ -275,12 +294,21 @@ const CreateSubscriptionModal = ({
                                     {SUPPORTED_CURRENCIES.map((option) => (
                                         <Pressable
                                             key={option.code}
-                                            className={clsx('category-chip', currency === option.code && 'category-chip-active')}
+                                            className={clsx(
+                                                'category-chip',
+                                                currency === option.code && 'category-chip-active',
+                                            )}
                                             onPress={() => setCurrency(option.code)}
                                             accessibilityRole="button"
                                             accessibilityLabel={option.name}
                                         >
-                                            <Text className={clsx('category-chip-text', currency === option.code && 'category-chip-text-active')}>
+                                            <Text
+                                                className={clsx(
+                                                    'category-chip-text',
+                                                    currency === option.code &&
+                                                        'category-chip-text-active',
+                                                )}
+                                            >
                                                 {option.symbol} {option.code}
                                             </Text>
                                         </Pressable>
@@ -289,7 +317,9 @@ const CreateSubscriptionModal = ({
                             </View>
 
                             <View className="auth-field">
-                                <Text className="auth-label">Price ({currencySymbol(currency)})</Text>
+                                <Text className="auth-label">
+                                    Price ({currencySymbol(currency)})
+                                </Text>
                                 <TextInput
                                     className={clsx('auth-input', priceError && 'auth-input-error')}
                                     placeholder="0.00"
@@ -306,18 +336,36 @@ const CreateSubscriptionModal = ({
                                 <Text className="auth-label">Frequency</Text>
                                 <View className="picker-row">
                                     <Pressable
-                                        className={clsx('picker-option', frequency === 'Monthly' && 'picker-option-active')}
+                                        className={clsx(
+                                            'picker-option',
+                                            frequency === 'Monthly' && 'picker-option-active',
+                                        )}
                                         onPress={() => setFrequency('Monthly')}
                                     >
-                                        <Text className={clsx('picker-option-text', frequency === 'Monthly' && 'picker-option-text-active')}>
+                                        <Text
+                                            className={clsx(
+                                                'picker-option-text',
+                                                frequency === 'Monthly' &&
+                                                    'picker-option-text-active',
+                                            )}
+                                        >
                                             Monthly
                                         </Text>
                                     </Pressable>
                                     <Pressable
-                                        className={clsx('picker-option', frequency === 'Yearly' && 'picker-option-active')}
+                                        className={clsx(
+                                            'picker-option',
+                                            frequency === 'Yearly' && 'picker-option-active',
+                                        )}
                                         onPress={() => setFrequency('Yearly')}
                                     >
-                                        <Text className={clsx('picker-option-text', frequency === 'Yearly' && 'picker-option-text-active')}>
+                                        <Text
+                                            className={clsx(
+                                                'picker-option-text',
+                                                frequency === 'Yearly' &&
+                                                    'picker-option-text-active',
+                                            )}
+                                        >
                                             Yearly
                                         </Text>
                                     </Pressable>
@@ -346,19 +394,30 @@ const CreateSubscriptionModal = ({
                                             {TRIAL_LENGTH_OPTIONS.map((days) => (
                                                 <Pressable
                                                     key={days}
-                                                    className={clsx('picker-option', trialDays === days && 'picker-option-active')}
+                                                    className={clsx(
+                                                        'picker-option',
+                                                        trialDays === days &&
+                                                            'picker-option-active',
+                                                    )}
                                                     onPress={() => setTrialDays(days)}
                                                     accessibilityRole="button"
                                                     accessibilityLabel={`${days} day trial`}
                                                 >
-                                                    <Text className={clsx('picker-option-text', trialDays === days && 'picker-option-text-active')}>
+                                                    <Text
+                                                        className={clsx(
+                                                            'picker-option-text',
+                                                            trialDays === days &&
+                                                                'picker-option-text-active',
+                                                        )}
+                                                    >
                                                         {days} days
                                                     </Text>
                                                 </Pressable>
                                             ))}
                                         </View>
                                         <Text className="text-xs font-sans-medium text-muted-foreground">
-                                            First charge on {dayjs().add(trialDays, 'day').format('MMM D, YYYY')}.
+                                            First charge on{' '}
+                                            {dayjs().add(trialDays, 'day').format('MMM D, YYYY')}.
                                         </Text>
                                     </View>
                                 )}
@@ -367,18 +426,30 @@ const CreateSubscriptionModal = ({
                             <View className="auth-field">
                                 <Text className="auth-label">Splitting this with anyone?</Text>
                                 <Text className="text-xs font-sans-medium text-muted-foreground">
-                                    Family and duo plans only cost you your share — Lumora counts it that way.
+                                    Family and duo plans only cost you your share — Lumora counts it
+                                    that way.
                                 </Text>
                                 <View className="mt-2 flex-row flex-wrap gap-2">
                                     {HOUSEHOLD_OPTIONS.map((size) => (
                                         <Pressable
                                             key={size}
-                                            className={clsx('category-chip', householdSize === size && 'category-chip-active')}
+                                            className={clsx(
+                                                'category-chip',
+                                                householdSize === size && 'category-chip-active',
+                                            )}
                                             onPress={() => setHouseholdSize(size)}
                                             accessibilityRole="button"
-                                            accessibilityLabel={size === 1 ? 'Just me' : `Split ${size} ways`}
+                                            accessibilityLabel={
+                                                size === 1 ? 'Just me' : `Split ${size} ways`
+                                            }
                                         >
-                                            <Text className={clsx('category-chip-text', householdSize === size && 'category-chip-text-active')}>
+                                            <Text
+                                                className={clsx(
+                                                    'category-chip-text',
+                                                    householdSize === size &&
+                                                        'category-chip-text-active',
+                                                )}
+                                            >
                                                 {size === 1 ? 'Just me' : `${size} people`}
                                             </Text>
                                         </Pressable>
@@ -386,7 +457,9 @@ const CreateSubscriptionModal = ({
                                 </View>
                                 {householdSize > 1 && isValidPrice && (
                                     <Text className="mt-1 text-xs font-sans-semibold text-accent">
-                                        Your share: {currencySymbol(currency)}{(priceNumber / householdSize).toFixed(2)} per {frequency === 'Monthly' ? 'month' : 'year'}
+                                        Your share: {currencySymbol(currency)}
+                                        {(priceNumber / householdSize).toFixed(2)} per{' '}
+                                        {frequency === 'Monthly' ? 'month' : 'year'}
                                     </Text>
                                 )}
                             </View>
@@ -397,10 +470,18 @@ const CreateSubscriptionModal = ({
                                     {CATEGORIES.map((cat) => (
                                         <Pressable
                                             key={cat}
-                                            className={clsx('category-chip', category === cat && 'category-chip-active')}
+                                            className={clsx(
+                                                'category-chip',
+                                                category === cat && 'category-chip-active',
+                                            )}
                                             onPress={() => setCategory(cat)}
                                         >
-                                            <Text className={clsx('category-chip-text', category === cat && 'category-chip-text-active')}>
+                                            <Text
+                                                className={clsx(
+                                                    'category-chip-text',
+                                                    category === cat && 'category-chip-text-active',
+                                                )}
+                                            >
                                                 {cat}
                                             </Text>
                                         </Pressable>
@@ -428,12 +509,22 @@ const CreateSubscriptionModal = ({
                                         {knownPaymentMethods.map((method) => (
                                             <Pressable
                                                 key={method}
-                                                className={clsx('category-chip', paymentMethod === method && 'category-chip-active')}
+                                                className={clsx(
+                                                    'category-chip',
+                                                    paymentMethod === method &&
+                                                        'category-chip-active',
+                                                )}
                                                 onPress={() => setPaymentMethod(method)}
                                                 accessibilityRole="button"
                                                 accessibilityLabel={`Paid with ${method}`}
                                             >
-                                                <Text className={clsx('category-chip-text', paymentMethod === method && 'category-chip-text-active')}>
+                                                <Text
+                                                    className={clsx(
+                                                        'category-chip-text',
+                                                        paymentMethod === method &&
+                                                            'category-chip-text-active',
+                                                    )}
+                                                >
                                                     {method}
                                                 </Text>
                                             </Pressable>
@@ -446,13 +537,24 @@ const CreateSubscriptionModal = ({
                             </View>
 
                             <Pressable
-                                className={clsx('auth-button', (!isValidForm || isSubmitting) && 'auth-button-disabled')}
+                                className={clsx(
+                                    'auth-button',
+                                    (!isValidForm || isSubmitting) && 'auth-button-disabled',
+                                )}
                                 onPress={handleSubmit}
                                 disabled={!isValidForm || isSubmitting}
                                 accessibilityRole="button"
-                                accessibilityLabel={mode === 'create' ? 'Create subscription' : 'Save changes'}
+                                accessibilityLabel={
+                                    mode === 'create' ? 'Create subscription' : 'Save changes'
+                                }
                             >
-                                <Text className="auth-button-text">{isSubmitting ? 'Saving...' : mode === 'create' ? 'Create Subscription' : 'Save Changes'}</Text>
+                                <Text className="auth-button-text">
+                                    {isSubmitting
+                                        ? 'Saving...'
+                                        : mode === 'create'
+                                          ? 'Create Subscription'
+                                          : 'Save Changes'}
+                                </Text>
                             </Pressable>
                         </ScrollView>
                     </Pressable>

@@ -54,10 +54,10 @@ such in the UI — Lumora has no pricing feed and never presents them as quotes.
 are used. Two capabilities degrade there, and the app says so in-app rather than failing
 silently:
 
-| | In Expo Go | In a dev/store build |
-|---|---|---|
-| Local notifications | Android can't schedule them; the toggle explains why | Full renewal, trial and digest reminders |
-| RevenueCat / Pro | Preview mode; Pro-gated cards show a "not configured" placeholder | Real paywall and entitlements |
+|                     | In Expo Go                                                        | In a dev/store build                     |
+| ------------------- | ----------------------------------------------------------------- | ---------------------------------------- |
+| Local notifications | Android can't schedule them; the toggle explains why              | Full renewal, trial and digest reminders |
+| RevenueCat / Pro    | Preview mode; Pro-gated cards show a "not configured" placeholder | Real paywall and entitlements            |
 
 Everything else — Convex sync, insights, calendar, import/export, discovery, sharing — behaves
 identically. Use a **development build** (`expo-dev-client`) when you need to test the paywall
@@ -66,6 +66,7 @@ or notifications for real.
 ## Setup
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -73,9 +74,11 @@ or notifications for real.
 2. Copy `.env.example` to `.env` and fill in the values (see below).
 
 3. Set up Convex — this is required to actually load data:
+
    ```bash
    npx convex dev
    ```
+
    This logs you in, creates/links a Convex project, and writes `EXPO_PUBLIC_CONVEX_URL` into `.env.local` for you (move it into `.env` or keep it in both — Expo reads all `.env*` files). Leave `npx convex dev` running in a separate terminal while developing so backend changes in `convex/` deploy automatically.
 
    Note: `convex/_generated/*` is checked into this repo as a hand-written stand-in (Convex normally generates it, but that requires a linked project first — a chicken-and-egg problem for a fresh clone). It's functionally identical to real codegen output, so the app builds and runs without it being regenerated. Running `npx convex dev` overwrites it with the official version automatically — nothing to do on your end.
@@ -93,12 +96,12 @@ or notifications for real.
 
 ### Required env vars
 
-| Variable | Where to get it |
-|---|---|
-| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk dashboard → API Keys |
-| `EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog → Project Settings |
-| `EXPO_PUBLIC_POSTHOG_HOST` | Usually `https://us.i.posthog.com` |
-| `EXPO_PUBLIC_CONVEX_URL` | Written automatically by `npx convex dev` |
+| Variable                                          | Where to get it                                     |
+| ------------------------------------------------- | --------------------------------------------------- |
+| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY`               | Clerk dashboard → API Keys                          |
+| `EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN`               | PostHog → Project Settings                          |
+| `EXPO_PUBLIC_POSTHOG_HOST`                        | Usually `https://us.i.posthog.com`                  |
+| `EXPO_PUBLIC_CONVEX_URL`                          | Written automatically by `npx convex dev`           |
 | `EXPO_PUBLIC_REVENUECAT_IOS_KEY` / `_ANDROID_KEY` | RevenueCat → Project Settings → API Keys (optional) |
 
 Convex also needs `CLERK_JWT_ISSUER_DOMAIN` set as a **Convex** deployment env var (not an Expo one) — set it via the Convex dashboard or `npx convex env set CLERK_JWT_ISSUER_DOMAIN <your-clerk-frontend-api-url>`. Find that URL in Clerk's dashboard under the Convex native integration (Configure → Sessions), or it's your Clerk instance's Frontend API host.
@@ -135,6 +138,7 @@ result, or safe-area-context's `SafeAreaView` and the prop is **silently dropped
 warning, the element just renders naked.
 
 Use the pre-wrapped versions:
+
 - `import { SafeAreaView } from '@/components/SafeAreaView'`
 - `import { AnimatedView, AnimatedText, AnimatedPressable } from '@/components/motion/Animated'`
 
@@ -142,14 +146,14 @@ Use the pre-wrapped versions:
 
 **Overlays are a trap in React Native — and so is animating a disclosure.** Three attempts
 at the same info-tooltip failed on device before the boring one worked: an absolutely
-positioned popover painted *under* the card's own later siblings; an inline panel animated
+positioned popover painted _under_ the card's own later siblings; an inline panel animated
 with Reanimated `entering`/`exiting` settled correctly but rendered a frame before its
 siblings reflowed, so it visibly overlapped while opening, left a gap while closing, and the
 transition read as input lag. The third and current version is a plain conditional render:
 it reflows in the same commit as the state change, so it is instant and cannot overlap.
 
- `position: absolute` only stacks above siblings that
-come *earlier* in the tree — anything rendered after it in the same parent paints straight over
+`position: absolute` only stacks above siblings that
+come _earlier_ in the tree — anything rendered after it in the same parent paints straight over
 the top, and `zIndex` does not reliably save you. A tooltip popover built that way rendered on
 top of the card's own content and the two texts overlapped illegibly on device. `LabelWithInfo`
 now expands **inline**, pushing the card taller, which cannot collide with anything. Prefer
@@ -162,7 +166,7 @@ including inside `@layer components`.
 
 Wrapping the app in a `VariableContextProvider` to drive these from `useColorScheme()` looks
 tempting and is a trap: on web it renders `<div style="--color-…">`, those inherited custom
-properties beat the `:root` media query, and static prerendering bakes in the *light* palette —
+properties beat the `:root` media query, and static prerendering bakes in the _light_ palette —
 pinning the entire app to light mode. It was tried and reverted. Add new colour tokens to the
 `@theme` block and the dark media query, and to `constants/theme.ts` for raw style props.
 
@@ -175,8 +179,8 @@ colour as a left spine instead of a background fill for the same reason.
 
 The category splits in two. Bank-linked apps (Rocket Money) auto-detect subscriptions but
 need your banking credentials, and get criticised for aggressive upselling. Manual trackers
-(Bobby, Subby, TrackMySubs) are private and pleasant, but share one admitted weakness: *a
-subscription you have forgotten never appears, because you never enter it.*
+(Bobby, Subby, TrackMySubs) are private and pleasant, but share one admitted weakness: _a
+subscription you have forgotten never appears, because you never enter it._
 
 Lumora is a manual tracker that attacks that weakness directly rather than accepting it:
 
@@ -246,10 +250,10 @@ npx tsc --noEmit        # typecheck
 ## Building for stores
 
 `eas.json` has `development`, `preview`, and `production` profiles. Before your first store submission, double check:
+
 - `app.config.js`'s `ios.bundleIdentifier` / `android.package` (currently `com.lumora.app` — change if you use a different developer account domain)
 - App icons/screenshots and the placeholder copy in `app/legal/privacy.tsx` and `app/legal/terms.tsx` (needs legal review)
 - RevenueCat products configured in App Store Connect / Google Play Console
-
 
 ## Landscape sources
 

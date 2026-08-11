@@ -31,7 +31,10 @@ export function configurePurchases(appUserID: string) {
         Purchases.configure({ apiKey, appUserID });
         hasConfigured = true;
     } catch (error) {
-        console.warn('Purchases configuration skipped:', error instanceof Error ? error.message : error);
+        console.warn(
+            'Purchases configuration skipped:',
+            error instanceof Error ? error.message : error,
+        );
     }
 }
 

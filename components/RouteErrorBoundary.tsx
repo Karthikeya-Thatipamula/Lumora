@@ -15,7 +15,12 @@ export default function RouteErrorBoundary({ error, retry }: ErrorBoundaryProps)
         <SafeAreaView className="flex-1 bg-background">
             <ScrollView
                 className="flex-1"
-                contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24, gap: 16 }}
+                contentContainerStyle={{
+                    flexGrow: 1,
+                    justifyContent: 'center',
+                    padding: 24,
+                    gap: 16,
+                }}
             >
                 <Text style={{ fontSize: 40 }}>{isBackendMissing ? '🔌' : '⚠️'}</Text>
 
@@ -35,7 +40,12 @@ export default function RouteErrorBoundary({ error, retry }: ErrorBoundaryProps)
                     </Text>
                 </View>
 
-                <Pressable className="auth-button" onPress={retry} accessibilityRole="button" accessibilityLabel="Try again">
+                <Pressable
+                    className="auth-button"
+                    onPress={retry}
+                    accessibilityRole="button"
+                    accessibilityLabel="Try again"
+                >
                     <Text className="auth-button-text">Try Again</Text>
                 </Pressable>
             </ScrollView>

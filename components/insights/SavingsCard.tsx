@@ -44,22 +44,27 @@ const SavingsCard = ({ savings, trialCommitment, sharingSavings, currency }: Sav
                             format={(amount) => formatCurrency(amount, currency)}
                         />
                         <Text className="mt-1 text-sm font-sans-medium text-muted-foreground">
-                            a year, from {savings.count} cancelled {savings.count === 1 ? 'subscription' : 'subscriptions'}
-                            {' '}({formatCurrency(savings.monthly, currency)}/month)
+                            a year, from {savings.count} cancelled{' '}
+                            {savings.count === 1 ? 'subscription' : 'subscriptions'} (
+                            {formatCurrency(savings.monthly, currency)}/month)
                         </Text>
                     </View>
                 </>
             ) : (
                 <Text className="text-sm font-sans-medium text-muted-foreground">
-                    Cancel a subscription you no longer use and Lumora starts tracking what you save here.
+                    Cancel a subscription you no longer use and Lumora starts tracking what you save
+                    here.
                 </Text>
             )}
 
             {sharingSavings > 0 && (
                 <View className="rounded-2xl bg-background p-3">
-                    <Text className="text-xs font-sans-semibold text-success">Sharing pays off</Text>
+                    <Text className="text-xs font-sans-semibold text-success">
+                        Sharing pays off
+                    </Text>
                     <Text className="mt-1 text-sm font-sans-medium text-muted-foreground">
-                        Splitting plans saves you another {formatCurrency(sharingSavings, currency)}/month versus paying for each on your own.
+                        Splitting plans saves you another {formatCurrency(sharingSavings, currency)}
+                        /month versus paying for each on your own.
                     </Text>
                 </View>
             )}
@@ -68,7 +73,8 @@ const SavingsCard = ({ savings, trialCommitment, sharingSavings, currency }: Sav
                 <View className="rounded-2xl bg-background p-3">
                     <Text className="text-xs font-sans-semibold text-accent">Heads up</Text>
                     <Text className="mt-1 text-sm font-sans-medium text-muted-foreground">
-                        {formatCurrency(trialCommitment, currency)}/month starts if you keep every trial you&apos;re running.
+                        {formatCurrency(trialCommitment, currency)}/month starts if you keep every
+                        trial you&apos;re running.
                     </Text>
                 </View>
             )}

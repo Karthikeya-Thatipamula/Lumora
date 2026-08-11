@@ -1,4 +1,4 @@
-import type { ImageSourcePropType } from "react-native";
+import type { ImageSourcePropType } from 'react-native';
 
 declare global {
     interface AppTab {
@@ -37,7 +37,7 @@ declare global {
         priceHistory?: { price: number; changedAt: string }[];
     }
 
-    interface SubscriptionCardProps extends Omit<Subscription, "id"> {
+    interface SubscriptionCardProps extends Omit<Subscription, 'id'> {
         expanded: boolean;
         onPress: () => void;
         onManagePress?: () => void;

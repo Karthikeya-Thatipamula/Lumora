@@ -2,9 +2,7 @@ import { buildSubscriptionsCsv, exportFileName } from '@/lib/csv';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
 
-export type ExportResult =
-    | { ok: true }
-    | { ok: false; reason: 'empty' | 'unavailable' | 'failed' };
+export type ExportResult = { ok: true } | { ok: false; reason: 'empty' | 'unavailable' | 'failed' };
 
 async function exportOnWeb(csv: string, fileName: string): Promise<ExportResult> {
     if (typeof document === 'undefined' || typeof URL?.createObjectURL !== 'function') {

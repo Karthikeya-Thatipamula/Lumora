@@ -24,18 +24,26 @@ function urgencyCopy(daysUntilCharge: number): string {
 const TrialAlertCard = ({ trials, onPressTrial }: TrialAlertCardProps) => {
     if (trials.length === 0) return null;
 
-    const totalIfKept = trials.reduce((sum, { subscription }) => sum + personalPrice(subscription), 0);
+    const totalIfKept = trials.reduce(
+        (sum, { subscription }) => sum + personalPrice(subscription),
+        0,
+    );
     const currencies = new Set(trials.map(({ subscription }) => subscription.currency ?? 'USD'));
 
     // Only pulse while a charge is genuinely imminent — a permanent glow is just noise.
     const isUrgent = trials.some((entry) => entry.daysUntilCharge <= 2);
 
     return (
-        <GlowCard active={isUrgent} className="mb-5 rounded-3xl border border-accent/40 bg-accent/10 p-4">
+        <GlowCard
+            active={isUrgent}
+            className="mb-5 rounded-3xl border border-accent/40 bg-accent/10 p-4"
+        >
             <View className="mb-3 flex-row items-center justify-between gap-3">
                 <View className="min-w-0 flex-1">
                     <Text className="text-lg font-sans-bold text-accent">
-                        {trials.length === 1 ? 'Free trial ending' : `${trials.length} trials ending`}
+                        {trials.length === 1
+                            ? 'Free trial ending'
+                            : `${trials.length} trials ending`}
                     </Text>
                     <Text className="mt-0.5 text-sm font-sans-medium text-muted-foreground">
                         Cancel before the charge lands and it stays free
@@ -69,11 +77,15 @@ const TrialAlertCard = ({ trials, onPressTrial }: TrialAlertCardProps) => {
                                 {entry.subscription.name}
                             </Text>
                             <Text className="mt-0.5 text-xs font-sans-semibold text-accent">
-                                {urgencyCopy(entry.daysUntilCharge)} · {dayjs(entry.endsAt).format('MMM D')}
+                                {urgencyCopy(entry.daysUntilCharge)} ·{' '}
+                                {dayjs(entry.endsAt).format('MMM D')}
                             </Text>
                         </View>
                         <Text className="text-sm font-sans-bold text-primary">
-                            {formatCurrency(personalPrice(entry.subscription), entry.subscription.currency)}
+                            {formatCurrency(
+                                personalPrice(entry.subscription),
+                                entry.subscription.currency,
+                            )}
                         </Text>
                     </PressableScale>
                 ))}

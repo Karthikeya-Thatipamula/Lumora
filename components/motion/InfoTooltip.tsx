@@ -29,7 +29,9 @@ export const LabelWithInfo = ({ title, info, action, className }: LabelWithInfoP
     return (
         <View className="gap-2">
             <View className="flex-row items-center justify-between gap-2">
-                <Text className={className ?? 'flex-1 text-base font-sans-semibold text-primary'}>{title}</Text>
+                <Text className={className ?? 'flex-1 text-base font-sans-semibold text-primary'}>
+                    {title}
+                </Text>
 
                 <View className="flex-row items-center gap-3">
                     {action}

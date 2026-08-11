@@ -27,12 +27,18 @@ const Import = () => {
 
     const result: ImportResult | null = useMemo(
         () => (text.trim() ? parseSubscriptionsCsv(text) : null),
-        [text]
+        [text],
     );
 
     const duplicates = useMemo(
-        () => (result ? findImportDuplicates(result.rows, subscriptions.map((s) => s.name)) : new Set<string>()),
-        [result, subscriptions]
+        () =>
+            result
+                ? findImportDuplicates(
+                      result.rows,
+                      subscriptions.map((s) => s.name),
+                  )
+                : new Set<string>(),
+        [result, subscriptions],
     );
 
     const handleImport = async () => {
@@ -50,23 +56,34 @@ const Import = () => {
 
         setIsImporting(true);
         try {
-            const { imported, failed } = await importSubscriptions(result.rows.map((row) => row.values));
+            const { imported, failed } = await importSubscriptions(
+                result.rows.map((row) => row.values),
+            );
             posthog.capture('subscriptions_imported', { imported, failed: failed.length });
 
             if (failed.length > 0) {
                 alertDialog(
                     `Imported ${imported} of ${result.rows.length}`,
-                    `${failed.length} couldn't be saved: ${failed.slice(0, 3).map((f) => f.name).join(', ')}.`
+                    `${failed.length} couldn't be saved: ${failed
+                        .slice(0, 3)
+                        .map((f) => f.name)
+                        .join(', ')}.`,
                 );
             } else {
-                alertDialog('Import complete', `${imported} subscription${imported === 1 ? '' : 's'} added.`);
+                alertDialog(
+                    'Import complete',
+                    `${imported} subscription${imported === 1 ? '' : 's'} added.`,
+                );
             }
 
             setText('');
             safeBack(router, '/(tabs)/subscriptions');
         } catch (error) {
             console.error('Import failed:', error);
-            alertDialog('Import failed', 'Nothing was changed. Please check the data and try again.');
+            alertDialog(
+                'Import failed',
+                'Nothing was changed. Please check the data and try again.',
+            );
         } finally {
             setIsImporting(false);
         }
@@ -94,8 +111,9 @@ const Import = () => {
                 showsVerticalScrollIndicator={false}
             >
                 <Text className="text-sm font-sans-medium text-muted-foreground">
-                    Moving from another tracker or a spreadsheet? Export it as CSV, then paste it here.
-                    Lumora reads the columns it recognises and tells you about anything it can&apos;t.
+                    Moving from another tracker or a spreadsheet? Export it as CSV, then paste it
+                    here. Lumora reads the columns it recognises and tells you about anything it
+                    can&apos;t.
                 </Text>
 
                 <View className="auth-field">
@@ -113,8 +131,8 @@ const Import = () => {
                         accessibilityLabel="Paste CSV data"
                     />
                     <Text className="text-xs font-sans-medium text-muted-foreground">
-                        Needs at least a Name and Price column. Billing, Category, Currency and Payment
-                        method are used when present.
+                        Needs at least a Name and Price column. Billing, Category, Currency and
+                        Payment method are used when present.
                     </Text>
                 </View>
 
@@ -125,11 +143,20 @@ const Import = () => {
                         </Text>
 
                         {result.rows.slice(0, 5).map((row, index) => (
-                            <View key={`${row.values.name}-${index}`} className="flex-row items-center justify-between gap-3">
-                                <Text className="flex-1 text-sm font-sans-medium text-primary" numberOfLines={1}>
+                            <View
+                                key={`${row.values.name}-${index}`}
+                                className="flex-row items-center justify-between gap-3"
+                            >
+                                <Text
+                                    className="flex-1 text-sm font-sans-medium text-primary"
+                                    numberOfLines={1}
+                                >
                                     {row.values.name}
                                     {duplicates.has(row.values.name) && (
-                                        <Text className="text-xs font-sans-semibold text-accent"> · already tracked</Text>
+                                        <Text className="text-xs font-sans-semibold text-accent">
+                                            {' '}
+                                            · already tracked
+                                        </Text>
                                     )}
                                 </Text>
                                 <Text className="text-sm font-sans-semibold text-muted-foreground">
@@ -147,10 +174,14 @@ const Import = () => {
                         {result.errors.length > 0 && (
                             <View className="gap-1 rounded-2xl border border-destructive/30 bg-destructive/10 p-3">
                                 <Text className="text-xs font-sans-bold text-destructive">
-                                    {result.errors.length} row{result.errors.length === 1 ? '' : 's'} skipped
+                                    {result.errors.length} row
+                                    {result.errors.length === 1 ? '' : 's'} skipped
                                 </Text>
                                 {result.errors.slice(0, 4).map((error) => (
-                                    <Text key={error.line} className="text-xs font-sans-medium text-destructive">
+                                    <Text
+                                        key={error.line}
+                                        className="text-xs font-sans-medium text-destructive"
+                                    >
                                         Line {error.line}: {error.reason}
                                     </Text>
                                 ))}
@@ -167,7 +198,9 @@ const Import = () => {
                             {isImporting ? (
                                 <ActivityIndicator color="#081126" />
                             ) : (
-                                <Text className="auth-button-text">Import {result.rows.length}</Text>
+                                <Text className="auth-button-text">
+                                    Import {result.rows.length}
+                                </Text>
                             )}
                         </PressableScale>
                     </AnimatedView>

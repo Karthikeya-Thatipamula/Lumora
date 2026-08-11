@@ -8,7 +8,15 @@ import { useAuth, useSignUp } from '@clerk/expo';
 import { Link } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import { useState } from 'react';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    Pressable,
+    ScrollView,
+    Text,
+    View,
+} from 'react-native';
 import Animated, { FadeIn, FadeInDown } from 'react-native-reanimated';
 import { AnimatedView } from '@/components/motion/Animated';
 
@@ -31,7 +39,8 @@ const SignUp = () => {
     const [emailTouched, setEmailTouched] = useState(false);
     const [passwordTouched, setPasswordTouched] = useState(false);
 
-    const emailValid = emailAddress.length === 0 || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress.trim());
+    const emailValid =
+        emailAddress.length === 0 || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailAddress.trim());
     const passwordValid = password.length === 0 || password.length >= 8;
     const formValid = emailAddress.trim().length > 0 && password.length >= 8 && emailValid;
     const isBusy = fetchStatus === 'fetching';
@@ -49,7 +58,10 @@ const SignUp = () => {
             });
 
             if (error) {
-                const message = getClerkErrorMessage(error, 'Unable to create your account. Please update your details and try again.');
+                const message = getClerkErrorMessage(
+                    error,
+                    'Unable to create your account. Please update your details and try again.',
+                );
                 setSubmitError(message);
                 posthog.capture('user_sign_up_failed', { error_message: message });
                 return;
@@ -57,7 +69,10 @@ const SignUp = () => {
 
             await signUp.verifications.sendEmailCode();
         } catch (err) {
-            const message = getClerkErrorMessage(err, 'Unable to create your account. Please update your details and try again.');
+            const message = getClerkErrorMessage(
+                err,
+                'Unable to create your account. Please update your details and try again.',
+            );
             setSubmitError(message);
             posthog.capture('user_sign_up_error', { error_message: message });
         }
@@ -85,7 +100,10 @@ const SignUp = () => {
                 setSubmitError('Verification is not complete yet. Please try again.');
             }
         } catch (err) {
-            const message = getClerkErrorMessage(err, 'Verification failed. Please check the code and try again.');
+            const message = getClerkErrorMessage(
+                err,
+                'Verification failed. Please check the code and try again.',
+            );
             setSubmitError(message);
             posthog.capture('user_verification_failed', { error_message: message });
         }
@@ -105,13 +123,22 @@ const SignUp = () => {
         return (
             <SafeAreaView className="auth-safe-area">
                 <AuroraBackground />
-                <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="auth-screen">
-                    <ScrollView className="auth-scroll" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    className="auth-screen"
+                >
+                    <ScrollView
+                        className="auth-scroll"
+                        keyboardShouldPersistTaps="handled"
+                        showsVerticalScrollIndicator={false}
+                    >
                         <AnimatedView entering={FadeInDown.duration(400)} className="auth-content">
                             <View className="auth-brand-block">
                                 <LumoraWordmark />
                                 <Text className="auth-title mt-7">Check your inbox</Text>
-                                <Text className="auth-subtitle">We sent a 6-digit code to {emailAddress.trim()}</Text>
+                                <Text className="auth-subtitle">
+                                    We sent a 6-digit code to {emailAddress.trim()}
+                                </Text>
                             </View>
 
                             <View className="auth-card">
@@ -146,7 +173,9 @@ const SignUp = () => {
                                         disabled={isBusy}
                                         accessibilityRole="button"
                                     >
-                                        <Text className="auth-secondary-button-text">Resend Code</Text>
+                                        <Text className="auth-secondary-button-text">
+                                            Resend Code
+                                        </Text>
                                     </Pressable>
                                 </View>
                             </View>
@@ -161,18 +190,32 @@ const SignUp = () => {
         <SafeAreaView className="auth-safe-area">
             <AuroraBackground />
 
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className="auth-screen">
-                <ScrollView className="auth-scroll" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                className="auth-screen"
+            >
+                <ScrollView
+                    className="auth-scroll"
+                    keyboardShouldPersistTaps="handled"
+                    showsVerticalScrollIndicator={false}
+                >
                     <View className="auth-content">
-                        <AnimatedView entering={FadeInDown.duration(500)} className="auth-brand-block">
+                        <AnimatedView
+                            entering={FadeInDown.duration(500)}
+                            className="auth-brand-block"
+                        >
                             <LumoraWordmark />
                             <Text className="auth-title mt-7">Take back control</Text>
                             <Text className="auth-subtitle">
-                                Most people pay for a dozen subscriptions and forget about three of them.
+                                Most people pay for a dozen subscriptions and forget about three of
+                                them.
                             </Text>
                         </AnimatedView>
 
-                        <AnimatedView entering={FadeInDown.duration(500).delay(100)} className="mt-7 gap-3">
+                        <AnimatedView
+                            entering={FadeInDown.duration(500).delay(100)}
+                            className="mt-7 gap-3"
+                        >
                             {SELLING_POINTS.map((point) => (
                                 <View key={point.text} className="auth-benefit">
                                     <Text style={{ fontSize: 18 }}>{point.emoji}</Text>
@@ -181,7 +224,10 @@ const SignUp = () => {
                             ))}
                         </AnimatedView>
 
-                        <AnimatedView entering={FadeInDown.duration(500).delay(200)} className="auth-card">
+                        <AnimatedView
+                            entering={FadeInDown.duration(500).delay(200)}
+                            className="auth-card"
+                        >
                             <View className="auth-form">
                                 <AuthTextField
                                     label="Email Address"
@@ -193,7 +239,9 @@ const SignUp = () => {
                                     keyboardType="email-address"
                                     autoComplete="email"
                                     error={
-                                        (emailTouched && !emailValid && 'Please enter a valid email address') ||
+                                        (emailTouched &&
+                                            !emailValid &&
+                                            'Please enter a valid email address') ||
                                         errors.fields.emailAddress?.message ||
                                         null
                                     }
@@ -209,15 +257,24 @@ const SignUp = () => {
                                         onBlur={() => setPasswordTouched(true)}
                                         autoComplete="password-new"
                                         error={
-                                            (passwordTouched && !passwordValid && 'Password must be at least 8 characters') ||
+                                            (passwordTouched &&
+                                                !passwordValid &&
+                                                'Password must be at least 8 characters') ||
                                             errors.fields.password?.message ||
                                             null
                                         }
-                                        hint={password.length === 0 ? 'Minimum 8 characters' : undefined}
+                                        hint={
+                                            password.length === 0
+                                                ? 'Minimum 8 characters'
+                                                : undefined
+                                        }
                                     />
 
                                     {password.length > 0 && (
-                                        <AnimatedView entering={FadeIn.duration(200)} className="mt-2 gap-1.5">
+                                        <AnimatedView
+                                            entering={FadeIn.duration(200)}
+                                            className="mt-2 gap-1.5"
+                                        >
                                             <View className="flex-row gap-1.5">
                                                 {[0, 1, 2, 3].map((index) => (
                                                     <View
@@ -225,12 +282,17 @@ const SignUp = () => {
                                                         className="h-1 flex-1 rounded-full"
                                                         style={{
                                                             backgroundColor:
-                                                                index < strength.score ? strength.color : 'rgba(128,128,128,0.25)',
+                                                                index < strength.score
+                                                                    ? strength.color
+                                                                    : 'rgba(128,128,128,0.25)',
                                                         }}
                                                     />
                                                 ))}
                                             </View>
-                                            <Text className="text-xs font-sans-semibold" style={{ color: strength.color }}>
+                                            <Text
+                                                className="text-xs font-sans-semibold"
+                                                style={{ color: strength.color }}
+                                            >
                                                 {strength.label}
                                             </Text>
                                         </AnimatedView>
@@ -238,8 +300,13 @@ const SignUp = () => {
                                 </View>
 
                                 {submitError && (
-                                    <AnimatedView entering={FadeIn.duration(200)} className="auth-banner-error">
-                                        <Text className="auth-banner-error-text">{submitError}</Text>
+                                    <AnimatedView
+                                        entering={FadeIn.duration(200)}
+                                        className="auth-banner-error"
+                                    >
+                                        <Text className="auth-banner-error-text">
+                                            {submitError}
+                                        </Text>
                                     </AnimatedView>
                                 )}
 
@@ -253,7 +320,9 @@ const SignUp = () => {
                                     {isBusy ? (
                                         <ActivityIndicator color="#081126" />
                                     ) : (
-                                        <Text className="auth-button-text">Create Free Account</Text>
+                                        <Text className="auth-button-text">
+                                            Create Free Account
+                                        </Text>
                                     )}
                                 </Pressable>
                             </View>
@@ -271,9 +340,14 @@ const SignUp = () => {
 
                             <Text className="mt-4 text-center text-xs font-sans-medium text-muted-foreground">
                                 By creating an account, you agree to Lumora&apos;s{' '}
-                                <Link href="/legal/terms"><Text className="text-accent">Terms of Use</Text></Link>
-                                {' '}and{' '}
-                                <Link href="/legal/privacy"><Text className="text-accent">Privacy Policy</Text></Link>.
+                                <Link href="/legal/terms">
+                                    <Text className="text-accent">Terms of Use</Text>
+                                </Link>{' '}
+                                and{' '}
+                                <Link href="/legal/privacy">
+                                    <Text className="text-accent">Privacy Policy</Text>
+                                </Link>
+                                .
                             </Text>
                         </Animated.View>
 

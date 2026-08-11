@@ -1,5 +1,11 @@
 import { ReactNode, useEffect } from 'react';
-import { Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from 'react-native-reanimated';
+import {
+    Easing,
+    useAnimatedStyle,
+    useSharedValue,
+    withRepeat,
+    withTiming,
+} from 'react-native-reanimated';
 import { AnimatedView } from '@/components/motion/Animated';
 
 interface GlowCardProps {
@@ -27,7 +33,7 @@ const GlowCard = ({ children, className, active = true, glowColor = '#ea7a53' }:
         glow.value = withRepeat(
             withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.quad) }),
             -1,
-            true
+            true,
         );
     }, [active, glow]);
 

@@ -23,10 +23,17 @@ const InviteCard = ({ reclaimedYearly, currency }: InviteCardProps) => {
         setIsSharing(true);
         try {
             const result = await shareLumora(reclaimedYearly, currency);
-            posthog.capture('invite_shared', { result, source: 'insights_savings', reclaimed_yearly: reclaimedYearly });
+            posthog.capture('invite_shared', {
+                result,
+                source: 'insights_savings',
+                reclaimed_yearly: reclaimedYearly,
+            });
 
             if (result === 'failed') {
-                alertDialog('Couldn’t open sharing', 'Your device didn’t open the share sheet. Please try again.');
+                alertDialog(
+                    'Couldn’t open sharing',
+                    'Your device didn’t open the share sheet. Please try again.',
+                );
             }
         } finally {
             setIsSharing(false);
@@ -35,7 +42,9 @@ const InviteCard = ({ reclaimedYearly, currency }: InviteCardProps) => {
 
     return (
         <View className="auth-card gap-3">
-            <Text className="text-base font-sans-semibold text-primary">Know someone overpaying?</Text>
+            <Text className="text-base font-sans-semibold text-primary">
+                Know someone overpaying?
+            </Text>
             <Text className="text-sm font-sans-medium text-muted-foreground">
                 {reclaimedYearly > 0
                     ? `You've clawed back ${formatCurrency(reclaimedYearly, currency)} a year. Most people have at least one subscription they forgot about.`
@@ -48,7 +57,9 @@ const InviteCard = ({ reclaimedYearly, currency }: InviteCardProps) => {
                 accessibilityRole="button"
                 accessibilityLabel="Share Lumora with a friend"
             >
-                <Text className="auth-secondary-button-text">{isSharing ? 'Opening…' : 'Share Lumora'}</Text>
+                <Text className="auth-secondary-button-text">
+                    {isSharing ? 'Opening…' : 'Share Lumora'}
+                </Text>
             </Pressable>
         </View>
     );

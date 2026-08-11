@@ -4,7 +4,11 @@ import { getTabBarContentInset } from '@/constants/theme';
 import { SUPPORTED_CURRENCIES } from '@/lib/currency';
 import { alertDialog, confirmDialog } from '@/lib/dialogs';
 import { exportSubscriptionsCsv } from '@/lib/export';
-import { areNotificationsSupported, ensureNotificationPermission, notificationsUnsupportedReason } from '@/lib/notifications';
+import {
+    areNotificationsSupported,
+    ensureNotificationPermission,
+    notificationsUnsupportedReason,
+} from '@/lib/notifications';
 import { isPurchasesConfigured } from '@/lib/purchases';
 import { getReclaimedSavings } from '@/lib/insights';
 import { shareLumora } from '@/lib/share';
@@ -21,7 +25,7 @@ import { usePostHog } from 'posthog-react-native';
 import { useEffect, useMemo, useState } from 'react';
 import { Image, Pressable, ScrollView, Switch, Text, View } from 'react-native';
 import Purchases from 'react-native-purchases';
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const REMINDER_OPTIONS = [1, 3, 7];
 const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
     { value: 'system', label: 'System' },
@@ -36,14 +40,25 @@ const Settings = () => {
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { isPro } = useProStatus();
-    const { notificationsEnabled, reminderDaysBefore, trialAlertsEnabled, weeklyDigestEnabled, currency, themePreference, updateSettings } = useUserSettings();
+    const {
+        notificationsEnabled,
+        reminderDaysBefore,
+        trialAlertsEnabled,
+        weeklyDigestEnabled,
+        currency,
+        themePreference,
+        updateSettings,
+    } = useUserSettings();
     const { subscriptions } = useSubscriptions();
     const [isRestoring, setIsRestoring] = useState(false);
     const [isExporting, setIsExporting] = useState(false);
     const [isDeletingAccount, setIsDeletingAccount] = useState(false);
     const deleteAllUserData = useMutation(api.userSettings.deleteAllUserData);
 
-    const reclaimedYearly = useMemo(() => getReclaimedSavings(subscriptions).yearly, [subscriptions]);
+    const reclaimedYearly = useMemo(
+        () => getReclaimedSavings(subscriptions).yearly,
+        [subscriptions],
+    );
 
     useEffect(() => {
         posthog.capture('settings_screen_viewed', {
@@ -91,7 +106,8 @@ const Settings = () => {
             posthog.capture('export_paywall_shown', { subscription_count: subscriptions.length });
             const seePro = await confirmDialog({
                 title: 'Export is a Pro feature',
-                message: 'Upgrade to Pro to download your full subscription history as a CSV you can open in Excel, Numbers or Sheets.',
+                message:
+                    'Upgrade to Pro to download your full subscription history as a CSV you can open in Excel, Numbers or Sheets.',
                 confirmText: 'See Pro',
                 cancelText: 'Not now',
             });
@@ -103,13 +119,16 @@ const Settings = () => {
         try {
             const result = await exportSubscriptionsCsv(subscriptions);
             if (result.ok) {
-                posthog.capture('subscriptions_exported', { subscription_count: subscriptions.length });
+                posthog.capture('subscriptions_exported', {
+                    subscription_count: subscriptions.length,
+                });
                 return;
             }
 
             const messages = {
                 empty: 'Add a subscription first — there’s nothing to export yet.',
-                unavailable: 'Sharing isn’t available on this device, so the file couldn’t be handed off.',
+                unavailable:
+                    'Sharing isn’t available on this device, so the file couldn’t be handed off.',
                 failed: 'We couldn’t build the export file. Please try again.',
             } as const;
             alertDialog('Export not completed', messages[result.reason]);
@@ -146,23 +165,33 @@ const Settings = () => {
             setIsDeletingAccount(false);
             alertDialog(
                 'Deletion failed',
-                'We couldn’t complete the deletion. Nothing partial was left behind — please try again, or contact support if it keeps failing.'
+                'We couldn’t complete the deletion. Nothing partial was left behind — please try again, or contact support if it keeps failing.',
             );
         }
     };
 
     const handleInvite = async () => {
         const result = await shareLumora(reclaimedYearly, currency);
-        posthog.capture('invite_shared', { result, source: 'settings', reclaimed_yearly: reclaimedYearly });
+        posthog.capture('invite_shared', {
+            result,
+            source: 'settings',
+            reclaimed_yearly: reclaimedYearly,
+        });
         if (result === 'failed') {
-            alertDialog('Couldn’t open sharing', 'Your device didn’t open the share sheet. Please try again.');
+            alertDialog(
+                'Couldn’t open sharing',
+                'Your device didn’t open the share sheet. Please try again.',
+            );
         }
     };
 
     const handleThemeChange = (preference: ThemePreference) => {
         updateSettings({ themePreference: preference }).catch((error) => {
             console.error('Update theme failed:', error);
-            alertDialog('Settings not saved', 'Please try again once your account is fully loaded.');
+            alertDialog(
+                'Settings not saved',
+                'Please try again once your account is fully loaded.',
+            );
         });
         posthog.capture('theme_changed', { theme: preference });
     };
@@ -170,7 +199,10 @@ const Settings = () => {
     const handleCurrencyChange = (code: string) => {
         updateSettings({ currency: code }).catch((error) => {
             console.error('Update currency failed:', error);
-            alertDialog('Settings not saved', 'Please try again once your account is fully loaded.');
+            alertDialog(
+                'Settings not saved',
+                'Please try again once your account is fully loaded.',
+            );
         });
         posthog.capture('currency_changed', { currency: code });
     };
@@ -178,7 +210,10 @@ const Settings = () => {
     const handleToggleWeeklyDigest = (enabled: boolean) => {
         updateSettings({ weeklyDigestEnabled: enabled }).catch((error) => {
             console.error('Update weekly digest setting failed:', error);
-            alertDialog('Settings not saved', 'Please try again once your account is fully loaded.');
+            alertDialog(
+                'Settings not saved',
+                'Please try again once your account is fully loaded.',
+            );
         });
         posthog.capture('weekly_digest_toggled', { enabled });
     };
@@ -186,7 +221,10 @@ const Settings = () => {
     const handleToggleTrialAlerts = (enabled: boolean) => {
         updateSettings({ trialAlertsEnabled: enabled }).catch((error) => {
             console.error('Update trial alert setting failed:', error);
-            alertDialog('Settings not saved', 'Please try again once your account is fully loaded.');
+            alertDialog(
+                'Settings not saved',
+                'Please try again once your account is fully loaded.',
+            );
         });
         posthog.capture('trial_alerts_toggled', { enabled });
     };
@@ -196,29 +234,43 @@ const Settings = () => {
             // Distinguish "this build can't do it" from "you denied permission" — telling
             // an Expo Go user to check their device settings sends them nowhere useful.
             if (!areNotificationsSupported) {
-                alertDialog('Reminders unavailable here', notificationsUnsupportedReason ?? 'Reminders aren’t available in this build.');
+                alertDialog(
+                    'Reminders unavailable here',
+                    notificationsUnsupportedReason ?? 'Reminders aren’t available in this build.',
+                );
                 return;
             }
 
             const granted = await ensureNotificationPermission();
             if (!granted) {
-                alertDialog('Notifications blocked', 'Enable notifications for Lumora in your device settings to get renewal reminders.');
+                alertDialog(
+                    'Notifications blocked',
+                    'Enable notifications for Lumora in your device settings to get renewal reminders.',
+                );
                 return;
             }
         }
         updateSettings({ notificationsEnabled: enabled }).catch((error) => {
             console.error('Update notification setting failed:', error);
-            alertDialog('Settings not saved', 'Please try again once your account is fully loaded.');
+            alertDialog(
+                'Settings not saved',
+                'Please try again once your account is fully loaded.',
+            );
         });
         posthog.capture('notifications_toggled', { enabled });
     };
 
-    const displayName = user?.firstName || user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User';
+    const displayName =
+        user?.firstName || user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User';
     const email = user?.emailAddresses[0]?.emailAddress;
 
     return (
         <SafeAreaView className="flex-1 bg-background">
-            <ScrollView className="flex-1 p-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: getTabBarContentInset(insets.bottom) }}>
+            <ScrollView
+                className="flex-1 p-5"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: getTabBarContentInset(insets.bottom) }}
+            >
                 <Text className="text-3xl font-sans-bold text-primary mb-6">Settings</Text>
 
                 {/* User Profile Section */}
@@ -229,9 +281,13 @@ const Settings = () => {
                             className="size-16 rounded-full"
                         />
                         <View className="flex-1">
-                            <Text className="text-lg font-sans-bold text-primary">{displayName}</Text>
+                            <Text className="text-lg font-sans-bold text-primary">
+                                {displayName}
+                            </Text>
                             {email && (
-                                <Text className="text-sm font-sans-medium text-muted-foreground">{email}</Text>
+                                <Text className="text-sm font-sans-medium text-muted-foreground">
+                                    {email}
+                                </Text>
                             )}
                         </View>
                     </View>
@@ -242,15 +298,25 @@ const Settings = () => {
                     <Text className="text-base font-sans-semibold text-primary mb-3">Account</Text>
                     <View className="gap-2">
                         <View className="flex-row justify-between items-center py-2">
-                            <Text className="text-sm font-sans-medium text-muted-foreground">Account ID</Text>
-                            <Text className="text-sm font-sans-medium text-primary" numberOfLines={1} ellipsizeMode="tail">
+                            <Text className="text-sm font-sans-medium text-muted-foreground">
+                                Account ID
+                            </Text>
+                            <Text
+                                className="text-sm font-sans-medium text-primary"
+                                numberOfLines={1}
+                                ellipsizeMode="tail"
+                            >
                                 {user?.id?.substring(0, 20)}...
                             </Text>
                         </View>
                         <View className="flex-row justify-between items-center py-2">
-                            <Text className="text-sm font-sans-medium text-muted-foreground">Joined</Text>
+                            <Text className="text-sm font-sans-medium text-muted-foreground">
+                                Joined
+                            </Text>
                             <Text className="text-sm font-sans-medium text-primary">
-                                {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+                                {user?.createdAt
+                                    ? new Date(user.createdAt).toLocaleDateString()
+                                    : 'N/A'}
                             </Text>
                         </View>
                     </View>
@@ -278,7 +344,13 @@ const Settings = () => {
                     </View>
 
                     {isPurchasesConfigured && (
-                        <Pressable className="mt-4" onPress={handleRestore} disabled={isRestoring} accessibilityRole="button" accessibilityLabel="Restore purchases">
+                        <Pressable
+                            className="mt-4"
+                            onPress={handleRestore}
+                            disabled={isRestoring}
+                            accessibilityRole="button"
+                            accessibilityLabel="Restore purchases"
+                        >
                             <Text className="text-sm font-sans-semibold text-accent">
                                 {isRestoring ? 'Restoring...' : 'Restore Purchases'}
                             </Text>
@@ -290,7 +362,9 @@ const Settings = () => {
                 <View className="auth-card mb-5 gap-4">
                     <View className="flex-row items-center justify-between">
                         <View className="flex-1 pr-3">
-                            <Text className="text-base font-sans-semibold text-primary">Renewal Reminders</Text>
+                            <Text className="text-base font-sans-semibold text-primary">
+                                Renewal Reminders
+                            </Text>
                             <Text className="text-sm font-sans-medium text-muted-foreground">
                                 Get notified before a subscription renews.
                             </Text>
@@ -306,7 +380,9 @@ const Settings = () => {
                     {notificationsEnabled && (
                         <View className="flex-row items-center justify-between border-t border-border pt-4">
                             <View className="flex-1 pr-3">
-                                <Text className="text-base font-sans-semibold text-primary">Free Trial Alerts</Text>
+                                <Text className="text-base font-sans-semibold text-primary">
+                                    Free Trial Alerts
+                                </Text>
                                 <Text className="text-sm font-sans-medium text-muted-foreground">
                                     Warn me before a trial converts to a paid plan.
                                 </Text>
@@ -323,7 +399,9 @@ const Settings = () => {
                     {notificationsEnabled && (
                         <View className="flex-row items-center justify-between border-t border-border pt-4">
                             <View className="flex-1 pr-3">
-                                <Text className="text-base font-sans-semibold text-primary">Weekly Digest</Text>
+                                <Text className="text-base font-sans-semibold text-primary">
+                                    Weekly Digest
+                                </Text>
                                 <Text className="text-sm font-sans-medium text-muted-foreground">
                                     One Sunday summary of the week ahead.
                                 </Text>
@@ -339,24 +417,45 @@ const Settings = () => {
 
                     {notificationsEnabled && (
                         <View className="gap-2 border-t border-border pt-4">
-                            <Text className="text-sm font-sans-semibold text-primary">Remind me before a renewal</Text>
+                            <Text className="text-sm font-sans-semibold text-primary">
+                                Remind me before a renewal
+                            </Text>
                             <View className="flex-row gap-2">
-                            {REMINDER_OPTIONS.map((days) => (
-                                <Pressable
-                                    key={days}
-                                    className={clsx('flex-1 items-center rounded-2xl border border-border py-2', reminderDaysBefore === days && 'border-accent bg-accent/10')}
-                                    onPress={() => updateSettings({ reminderDaysBefore: days }).catch((error) => {
-                                        console.error('Update reminder setting failed:', error);
-                                        alertDialog('Settings not saved', 'Please try again once your account is fully loaded.');
-                                    })}
-                                    accessibilityRole="button"
-                                    accessibilityLabel={`Remind me ${days} days before renewal`}
-                                >
-                                    <Text className={clsx('text-sm font-sans-semibold text-muted-foreground', reminderDaysBefore === days && 'text-accent')}>
-                                        {days}d before
-                                    </Text>
-                                </Pressable>
-                            ))}
+                                {REMINDER_OPTIONS.map((days) => (
+                                    <Pressable
+                                        key={days}
+                                        className={clsx(
+                                            'flex-1 items-center rounded-2xl border border-border py-2',
+                                            reminderDaysBefore === days &&
+                                                'border-accent bg-accent/10',
+                                        )}
+                                        onPress={() =>
+                                            updateSettings({ reminderDaysBefore: days }).catch(
+                                                (error) => {
+                                                    console.error(
+                                                        'Update reminder setting failed:',
+                                                        error,
+                                                    );
+                                                    alertDialog(
+                                                        'Settings not saved',
+                                                        'Please try again once your account is fully loaded.',
+                                                    );
+                                                },
+                                            )
+                                        }
+                                        accessibilityRole="button"
+                                        accessibilityLabel={`Remind me ${days} days before renewal`}
+                                    >
+                                        <Text
+                                            className={clsx(
+                                                'text-sm font-sans-semibold text-muted-foreground',
+                                                reminderDaysBefore === days && 'text-accent',
+                                            )}
+                                        >
+                                            {days}d before
+                                        </Text>
+                                    </Pressable>
+                                ))}
                             </View>
                         </View>
                     )}
@@ -364,7 +463,9 @@ const Settings = () => {
 
                 {/* Appearance Section */}
                 <View className="auth-card mb-5">
-                    <Text className="text-base font-sans-semibold text-primary mb-1">Appearance</Text>
+                    <Text className="text-base font-sans-semibold text-primary mb-1">
+                        Appearance
+                    </Text>
                     <Text className="text-sm font-sans-medium text-muted-foreground mb-3">
                         Follow your device, or pin Lumora to light or dark.
                     </Text>
@@ -374,7 +475,8 @@ const Settings = () => {
                                 key={option.value}
                                 className={clsx(
                                     'flex-1 items-center rounded-2xl border border-border py-3',
-                                    themePreference === option.value && 'border-accent bg-accent/10'
+                                    themePreference === option.value &&
+                                        'border-accent bg-accent/10',
                                 )}
                                 onPress={() => handleThemeChange(option.value)}
                                 accessibilityRole="button"
@@ -384,7 +486,7 @@ const Settings = () => {
                                 <Text
                                     className={clsx(
                                         'text-sm font-sans-semibold text-muted-foreground',
-                                        themePreference === option.value && 'text-accent'
+                                        themePreference === option.value && 'text-accent',
                                     )}
                                 >
                                     {option.label}
@@ -398,7 +500,8 @@ const Settings = () => {
                 <View className="auth-card mb-5">
                     <Text className="text-base font-sans-semibold text-primary mb-1">Currency</Text>
                     <Text className="text-sm font-sans-medium text-muted-foreground mb-3">
-                        Used for new subscriptions. Existing ones keep the currency they were saved with.
+                        Used for new subscriptions. Existing ones keep the currency they were saved
+                        with.
                     </Text>
                     <ScrollView
                         horizontal
@@ -408,12 +511,20 @@ const Settings = () => {
                         {SUPPORTED_CURRENCIES.map((option) => (
                             <Pressable
                                 key={option.code}
-                                className={clsx('category-chip', currency === option.code && 'category-chip-active')}
+                                className={clsx(
+                                    'category-chip',
+                                    currency === option.code && 'category-chip-active',
+                                )}
                                 onPress={() => handleCurrencyChange(option.code)}
                                 accessibilityRole="button"
                                 accessibilityLabel={option.name}
                             >
-                                <Text className={clsx('category-chip-text', currency === option.code && 'category-chip-text-active')}>
+                                <Text
+                                    className={clsx(
+                                        'category-chip-text',
+                                        currency === option.code && 'category-chip-text-active',
+                                    )}
+                                >
                                     {option.symbol} {option.code}
                                 </Text>
                             </Pressable>
@@ -423,7 +534,9 @@ const Settings = () => {
 
                 {/* Invite Section */}
                 <View className="auth-card mb-5">
-                    <Text className="text-base font-sans-semibold text-primary mb-1">Share Lumora</Text>
+                    <Text className="text-base font-sans-semibold text-primary mb-1">
+                        Share Lumora
+                    </Text>
                     <Text className="text-sm font-sans-medium text-muted-foreground mb-3">
                         {reclaimedYearly > 0
                             ? 'Pass on what you’ve saved — most people have a forgotten subscription.'
@@ -441,9 +554,12 @@ const Settings = () => {
 
                 {/* Data Section */}
                 <View className="auth-card mb-5">
-                    <Text className="text-base font-sans-semibold text-primary mb-1">Your data</Text>
+                    <Text className="text-base font-sans-semibold text-primary mb-1">
+                        Your data
+                    </Text>
                     <Text className="text-sm font-sans-medium text-muted-foreground mb-3">
-                        Bring a list in from another tracker, or download everything you&apos;ve tracked — yours to keep, no lock-in.
+                        Bring a list in from another tracker, or download everything you&apos;ve
+                        tracked — yours to keep, no lock-in.
                     </Text>
                     <Pressable
                         className="auth-secondary-button mb-2"
@@ -461,30 +577,57 @@ const Settings = () => {
                         accessibilityLabel="Export subscriptions as CSV"
                     >
                         <Text className="auth-secondary-button-text">
-                            {isExporting ? 'Preparing export...' : isPro ? 'Export as CSV' : 'Export as CSV (Pro)'}
+                            {isExporting
+                                ? 'Preparing export...'
+                                : isPro
+                                  ? 'Export as CSV'
+                                  : 'Export as CSV (Pro)'}
                         </Text>
                     </Pressable>
                 </View>
 
                 {/* Legal Section */}
                 <View className="auth-card mb-5 gap-1">
-                    <Pressable className="py-2" onPress={() => router.push('/help')} accessibilityRole="button" accessibilityLabel="Help and FAQ">
-                        <Text className="text-sm font-sans-semibold text-primary">Help &amp; FAQ</Text>
+                    <Pressable
+                        className="py-2"
+                        onPress={() => router.push('/help')}
+                        accessibilityRole="button"
+                        accessibilityLabel="Help and FAQ"
+                    >
+                        <Text className="text-sm font-sans-semibold text-primary">
+                            Help &amp; FAQ
+                        </Text>
                     </Pressable>
-                    <Pressable className="py-2" onPress={() => router.push('/legal/privacy')} accessibilityRole="button" accessibilityLabel="Privacy Policy">
-                        <Text className="text-sm font-sans-semibold text-primary">Privacy Policy</Text>
+                    <Pressable
+                        className="py-2"
+                        onPress={() => router.push('/legal/privacy')}
+                        accessibilityRole="button"
+                        accessibilityLabel="Privacy Policy"
+                    >
+                        <Text className="text-sm font-sans-semibold text-primary">
+                            Privacy Policy
+                        </Text>
                     </Pressable>
-                    <Pressable className="py-2" onPress={() => router.push('/legal/terms')} accessibilityRole="button" accessibilityLabel="Terms of Use">
-                        <Text className="text-sm font-sans-semibold text-primary">Terms of Use</Text>
+                    <Pressable
+                        className="py-2"
+                        onPress={() => router.push('/legal/terms')}
+                        accessibilityRole="button"
+                        accessibilityLabel="Terms of Use"
+                    >
+                        <Text className="text-sm font-sans-semibold text-primary">
+                            Terms of Use
+                        </Text>
                     </Pressable>
                 </View>
 
                 {/* Danger Zone */}
                 <View className="auth-card mb-5 gap-3 border-destructive/30">
-                    <Text className="text-base font-sans-semibold text-primary">Delete account</Text>
+                    <Text className="text-base font-sans-semibold text-primary">
+                        Delete account
+                    </Text>
                     <Text className="text-sm font-sans-medium text-muted-foreground">
-                        Erases every subscription, setting and history entry, then closes your account. There is
-                        no undo, and no copy kept on our side.
+                        Erases every subscription, setting and history entry, then closes your
+                        account. There is no undo, and no copy kept on our side.
                     </Text>
                     <Pressable
                         className="auth-secondary-button border-destructive/30 bg-destructive/10"
@@ -500,21 +643,19 @@ const Settings = () => {
                 </View>
 
                 {/* Sign Out Button */}
-                <Pressable
-                    className="auth-button bg-destructive"
-                    onPress={handleSignOut}
-                >
+                <Pressable className="auth-button bg-destructive" onPress={handleSignOut}>
                     <Text className="auth-button-text text-white">Sign Out</Text>
                 </Pressable>
 
                 {Application.nativeApplicationVersion && (
                     <Text className="mt-5 text-center text-xs font-sans-medium text-muted-foreground">
-                        Lumora v{Application.nativeApplicationVersion} ({Application.nativeBuildVersion})
+                        Lumora v{Application.nativeApplicationVersion} (
+                        {Application.nativeBuildVersion})
                     </Text>
                 )}
             </ScrollView>
         </SafeAreaView>
-    )
-}
+    );
+};
 
-export default Settings
+export default Settings;

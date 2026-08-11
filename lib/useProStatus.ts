@@ -19,7 +19,9 @@ export function useProStatus() {
             setIsLoading(false);
         };
 
-        Purchases.getCustomerInfo().then(applyCustomerInfo).catch(() => isMounted && setIsLoading(false));
+        Purchases.getCustomerInfo()
+            .then(applyCustomerInfo)
+            .catch(() => isMounted && setIsLoading(false));
         Purchases.addCustomerInfoUpdateListener(applyCustomerInfo);
 
         return () => {

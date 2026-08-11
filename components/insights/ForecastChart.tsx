@@ -39,7 +39,8 @@ const ForecastChart = ({ forecast, currency }: ForecastChartProps) => {
                 isAnimated
             />
             <Text className="text-xs font-sans-medium text-muted-foreground">
-                Projected at today&apos;s active subscriptions — doesn&apos;t yet account for cancellations or new sign-ups.
+                Projected at today&apos;s active subscriptions — doesn&apos;t yet account for
+                cancellations or new sign-ups.
             </Text>
         </View>
     );

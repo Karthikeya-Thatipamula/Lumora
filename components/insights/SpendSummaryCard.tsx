@@ -11,11 +11,16 @@ interface SpendSummaryCardProps {
     currency?: string;
 }
 
-const SpendSummaryCard = ({ monthlyTotal, yearlyTotal, activeCount, trialCount, currency }: SpendSummaryCardProps) => {
+const SpendSummaryCard = ({
+    monthlyTotal,
+    yearlyTotal,
+    activeCount,
+    trialCount,
+    currency,
+}: SpendSummaryCardProps) => {
     // Spelling out the trial split stops "1 active" next to a zero total looking broken.
-    const countLabel = trialCount > 0
-        ? `${activeCount} active · ${trialCount} on trial`
-        : `${activeCount} active`;
+    const countLabel =
+        trialCount > 0 ? `${activeCount} active · ${trialCount} on trial` : `${activeCount} active`;
 
     return (
         <View className="home-balance-card">

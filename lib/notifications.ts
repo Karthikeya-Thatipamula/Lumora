@@ -108,7 +108,7 @@ async function schedule(
     identifier: string,
     title: string,
     body: string,
-    date: Date
+    date: Date,
 ): Promise<void> {
     try {
         await Notifications.scheduleNotificationAsync({
@@ -129,12 +129,20 @@ function alertTime(target: string, daysBefore: number): Date | null {
     const parsed = dayjs(target);
     if (!parsed.isValid()) return null;
 
-    const triggerDate = parsed.subtract(daysBefore, 'day').hour(9).minute(0).second(0).millisecond(0);
+    const triggerDate = parsed
+        .subtract(daysBefore, 'day')
+        .hour(9)
+        .minute(0)
+        .second(0)
+        .millisecond(0);
     return triggerDate.isAfter(dayjs()) ? triggerDate.toDate() : null;
 }
 
 /** Schedules (or reschedules) a single local reminder for a subscription's next renewal. */
-export async function scheduleRenewalReminder(subscription: Subscription, daysBefore: number): Promise<void> {
+export async function scheduleRenewalReminder(
+    subscription: Subscription,
+    daysBefore: number,
+): Promise<void> {
     const Notifications = await getNotifications();
     if (!Notifications) return;
 
@@ -155,7 +163,7 @@ export async function scheduleRenewalReminder(subscription: Subscription, daysBe
         reminderIdentifier(subscription.id),
         `${subscription.name} renews soon`,
         `${formatCurrency(subscription.price, subscription.currency)} renews on ${dayjs(subscription.renewalDate).format('MMM D')}.`,
-        date
+        date,
     );
 }
 
@@ -169,7 +177,8 @@ export async function scheduleTrialReminder(subscription: Subscription): Promise
 
     await cancel(trialReminderIdentifier(subscription.id));
 
-    if (subscription.status !== 'active' || !subscription.isTrial || !subscription.trialEndsAt) return;
+    if (subscription.status !== 'active' || !subscription.isTrial || !subscription.trialEndsAt)
+        return;
 
     const date =
         alertTime(subscription.trialEndsAt, TRIAL_REMINDER_DAYS_BEFORE) ??
@@ -182,7 +191,7 @@ export async function scheduleTrialReminder(subscription: Subscription): Promise
         trialReminderIdentifier(subscription.id),
         `${subscription.name} trial ends soon`,
         `You'll be charged ${formatCurrency(subscription.price, subscription.currency)} on ${dayjs(subscription.trialEndsAt).format('MMM D')}. Cancel before then to stay free.`,
-        date
+        date,
     );
 }
 
@@ -206,9 +215,15 @@ function buildDigestBody(subscriptions: Subscription[]): string | null {
 
     if (dueThisWeek.length === 0) return null;
 
-    const total = dueThisWeek.reduce((sum, sub) => sum + sub.price / Math.max(1, sub.householdSize ?? 1), 0);
+    const total = dueThisWeek.reduce(
+        (sum, sub) => sum + sub.price / Math.max(1, sub.householdSize ?? 1),
+        0,
+    );
     const currency = dueThisWeek[0].currency;
-    const names = dueThisWeek.slice(0, 3).map((sub) => sub.name).join(', ');
+    const names = dueThisWeek
+        .slice(0, 3)
+        .map((sub) => sub.name)
+        .join(', ');
     const extra = dueThisWeek.length > 3 ? ` and ${dueThisWeek.length - 3} more` : '';
 
     return `${formatCurrency(total, currency)} due this week — ${names}${extra}.`;
@@ -219,7 +234,10 @@ function buildDigestBody(subscriptions: Subscription[]): string | null {
  * a stream of per-subscription pings, and it brings people back into the app on a
  * cadence without being the kind of noise that gets notifications switched off.
  */
-export async function scheduleWeeklyDigest(subscriptions: Subscription[], enabled: boolean): Promise<void> {
+export async function scheduleWeeklyDigest(
+    subscriptions: Subscription[],
+    enabled: boolean,
+): Promise<void> {
     const Notifications = await getNotifications();
     if (!Notifications) return;
 
@@ -265,7 +283,7 @@ export async function scheduleBudgetAlert(
     monthlySpend: number,
     monthlyBudget: number | undefined,
     enabled: boolean,
-    currency?: string
+    currency?: string,
 ): Promise<void> {
     const Notifications = await getNotifications();
     if (!Notifications) return;
@@ -287,7 +305,9 @@ export async function scheduleBudgetAlert(
         await Notifications.scheduleNotificationAsync({
             identifier: BUDGET_ALERT_IDENTIFIER,
             content: {
-                title: isOver ? 'Over your subscription budget' : 'Close to your subscription budget',
+                title: isOver
+                    ? 'Over your subscription budget'
+                    : 'Close to your subscription budget',
                 body,
                 sound: false,
             },
@@ -307,12 +327,14 @@ export async function syncRenewalReminders(
     subscriptions: Subscription[],
     daysBefore: number,
     enabled: boolean,
-    trialAlertsEnabled = true
+    trialAlertsEnabled = true,
 ): Promise<void> {
     if (!isSupported) return;
 
     if (!enabled) {
-        await Promise.all(subscriptions.map((subscription) => cancelAllRemindersFor(subscription.id)));
+        await Promise.all(
+            subscriptions.map((subscription) => cancelAllRemindersFor(subscription.id)),
+        );
         await cancel(WEEKLY_DIGEST_IDENTIFIER);
         await cancel(BUDGET_ALERT_IDENTIFIER);
         return;

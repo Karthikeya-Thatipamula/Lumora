@@ -25,7 +25,11 @@ const BudgetCard = ({ monthlyBudget, monthlySpend, currency, onSave }: BudgetCar
         const value = Number(trimmed);
 
         // Previously an invalid entry silently did nothing, so tapping Save looked broken.
-        if (trimmed === '' || !/^\+?(\d+(\.\d+)?|\.\d+)$/.test(trimmed) || !Number.isFinite(value)) {
+        if (
+            trimmed === '' ||
+            !/^\+?(\d+(\.\d+)?|\.\d+)$/.test(trimmed) ||
+            !Number.isFinite(value)
+        ) {
             setError('Enter a number, like 150');
             return;
         }
@@ -48,7 +52,8 @@ const BudgetCard = ({ monthlyBudget, monthlySpend, currency, onSave }: BudgetCar
             <View className="auth-card gap-3">
                 <Text className="text-base font-sans-semibold text-primary">Monthly Budget</Text>
                 <Text className="text-sm font-sans-medium text-muted-foreground">
-                    Set a cap and Lumora will flag it here (and via notifications) if you&apos;re about to go over.
+                    Set a cap and Lumora will flag it here (and via notifications) if you&apos;re
+                    about to go over.
                 </Text>
                 <View className="flex-row gap-3">
                     <TextInput
@@ -63,7 +68,12 @@ const BudgetCard = ({ monthlyBudget, monthlySpend, currency, onSave }: BudgetCar
                         keyboardType="decimal-pad"
                         maxLength={12}
                     />
-                    <Pressable className="auth-button mt-0 px-6" onPress={handleSave} accessibilityRole="button" accessibilityLabel="Save budget">
+                    <Pressable
+                        className="auth-button mt-0 px-6"
+                        onPress={handleSave}
+                        accessibilityRole="button"
+                        accessibilityLabel="Save budget"
+                    >
                         <Text className="auth-button-text">Save</Text>
                     </Pressable>
                 </View>
@@ -85,7 +95,10 @@ const BudgetCard = ({ monthlyBudget, monthlySpend, currency, onSave }: BudgetCar
                 info="Compared against your monthly spend: yearly plans divided by twelve, shared plans counted at your share, and running free trials excluded until they convert."
                 action={
                     <Pressable
-                        onPress={() => { setDraft(String(monthlyBudget)); setIsEditing(true); }}
+                        onPress={() => {
+                            setDraft(String(monthlyBudget));
+                            setIsEditing(true);
+                        }}
                         accessibilityRole="button"
                         accessibilityLabel="Edit monthly budget"
                         hitSlop={12}
@@ -97,13 +110,23 @@ const BudgetCard = ({ monthlyBudget, monthlySpend, currency, onSave }: BudgetCar
 
             <View className="h-3 overflow-hidden rounded-full bg-muted">
                 <View
-                    className={clsx('h-3 rounded-full', isOverBudget ? 'bg-destructive' : 'bg-success')}
+                    className={clsx(
+                        'h-3 rounded-full',
+                        isOverBudget ? 'bg-destructive' : 'bg-success',
+                    )}
                     style={{ width: `${percentage}%` }}
                 />
             </View>
 
-            <Text className={clsx('text-sm font-sans-semibold', isOverBudget ? 'text-destructive' : 'text-muted-foreground')}>
-                {formatCurrency(monthlySpend, currency)} of {formatCurrency(monthlyBudget, currency)} {isOverBudget ? '— over budget' : 'spent this month'}
+            <Text
+                className={clsx(
+                    'text-sm font-sans-semibold',
+                    isOverBudget ? 'text-destructive' : 'text-muted-foreground',
+                )}
+            >
+                {formatCurrency(monthlySpend, currency)} of{' '}
+                {formatCurrency(monthlyBudget, currency)}{' '}
+                {isOverBudget ? '— over budget' : 'spent this month'}
             </Text>
         </View>
     );

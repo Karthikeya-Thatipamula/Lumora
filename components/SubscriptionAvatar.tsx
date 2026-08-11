@@ -19,7 +19,11 @@ const SubscriptionAvatar = ({ name, iconKey, className }: SubscriptionAvatarProp
     return (
         <View
             className={className}
-            style={{ backgroundColor: getAvatarColor(name || 'subscription'), alignItems: 'center', justifyContent: 'center' }}
+            style={{
+                backgroundColor: getAvatarColor(name || 'subscription'),
+                alignItems: 'center',
+                justifyContent: 'center',
+            }}
             accessibilityLabel={`${name} icon`}
         >
             {/* The palette is always light, so the initials need fixed dark ink —

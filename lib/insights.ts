@@ -1,6 +1,6 @@
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
 
-const MONTHLY_BILLING_VALUES = new Set(["monthly", "month"]);
+const MONTHLY_BILLING_VALUES = new Set(['monthly', 'month']);
 
 /** People splitting a subscription, including the owner. Never less than one. */
 export function householdSizeOf(sub: Subscription): number {
@@ -19,20 +19,20 @@ export function personalPrice(sub: Subscription): number {
  * sticker price, and every total in the app should reflect what they actually pay.
  */
 export function monthlyEquivalent(sub: Subscription): number {
-    const billing = sub.billing?.toLowerCase() ?? "";
+    const billing = sub.billing?.toLowerCase() ?? '';
     const share = personalPrice(sub);
     return MONTHLY_BILLING_VALUES.has(billing) ? share : share / 12;
 }
 
 function isActive(sub: Subscription): boolean {
-    return sub.status === "active";
+    return sub.status === 'active';
 }
 
 /** True while a free trial is still running — i.e. nothing has been charged yet. */
 export function isTrialing(sub: Subscription): boolean {
     if (!sub.isTrial || !sub.trialEndsAt) return false;
     const endsAt = dayjs(sub.trialEndsAt);
-    return endsAt.isValid() && !endsAt.startOf("day").isBefore(dayjs().startOf("day"));
+    return endsAt.isValid() && !endsAt.startOf('day').isBefore(dayjs().startOf('day'));
 }
 
 /** Active *and* actually being charged. Trials are excluded until they convert. */
@@ -61,7 +61,7 @@ export function getCategoryBreakdown(subscriptions: Subscription[]): CategoryBre
     const byCategory = new Map<string, { total: number; count: number }>();
 
     for (const sub of active) {
-        const category = sub.category?.trim() || "Other";
+        const category = sub.category?.trim() || 'Other';
         const entry = byCategory.get(category) ?? { total: 0, count: 0 };
         entry.total += monthlyEquivalent(sub);
         entry.count += 1;
@@ -88,7 +88,7 @@ export function getForecast(subscriptions: Subscription[], months = 6): Forecast
     const monthly = getMonthlySpend(subscriptions);
     const start = dayjs();
     return Array.from({ length: months }, (_, i) => ({
-        label: start.add(i, "month").format("MMM"),
+        label: start.add(i, 'month').format('MMM'),
         amount: monthly,
     }));
 }
@@ -102,19 +102,21 @@ export interface StatusCounts {
 export function getStatusCounts(subscriptions: Subscription[]): StatusCounts {
     return subscriptions.reduce(
         (acc, sub) => {
-            if (sub.status === "active") acc.active += 1;
-            else if (sub.status === "paused") acc.paused += 1;
-            else if (sub.status === "cancelled") acc.cancelled += 1;
+            if (sub.status === 'active') acc.active += 1;
+            else if (sub.status === 'paused') acc.paused += 1;
+            else if (sub.status === 'cancelled') acc.cancelled += 1;
             return acc;
         },
-        { active: 0, paused: 0, cancelled: 0 }
+        { active: 0, paused: 0, cancelled: 0 },
     );
 }
 
 export function getMostExpensive(subscriptions: Subscription[]): Subscription | null {
     const active = subscriptions.filter(isBilling);
     if (active.length === 0) return null;
-    return active.reduce((max, sub) => (monthlyEquivalent(sub) > monthlyEquivalent(max) ? sub : max));
+    return active.reduce((max, sub) =>
+        monthlyEquivalent(sub) > monthlyEquivalent(max) ? sub : max,
+    );
 }
 
 export interface NextRenewal {
@@ -123,12 +125,12 @@ export interface NextRenewal {
 }
 
 export function getNextRenewal(subscriptions: Subscription[]): NextRenewal | null {
-    const today = dayjs().startOf("day");
+    const today = dayjs().startOf('day');
     const upcoming = subscriptions
         .filter((sub) => {
             if (!isActive(sub) || !sub.renewalDate) return false;
             const renewalDate = dayjs(sub.renewalDate);
-            return renewalDate.isValid() && !renewalDate.startOf("day").isBefore(today);
+            return renewalDate.isValid() && !renewalDate.startOf('day').isBefore(today);
         })
         .sort((a, b) => dayjs(a.renewalDate).diff(dayjs(b.renewalDate)));
 
@@ -137,14 +139,16 @@ export function getNextRenewal(subscriptions: Subscription[]): NextRenewal | nul
 }
 
 export function getUpcomingRenewals(subscriptions: Subscription[], withinDays = 7): Subscription[] {
-    const today = dayjs().startOf("day");
-    const cutoff = today.add(withinDays, "days");
+    const today = dayjs().startOf('day');
+    const cutoff = today.add(withinDays, 'days');
     return subscriptions
         .filter((sub) => {
             if (!isActive(sub) || !sub.renewalDate) return false;
             const renewalDate = dayjs(sub.renewalDate);
-            const renewalDay = renewalDate.startOf("day");
-            return renewalDate.isValid() && !renewalDay.isBefore(today) && !renewalDay.isAfter(cutoff);
+            const renewalDay = renewalDate.startOf('day');
+            return (
+                renewalDate.isValid() && !renewalDay.isBefore(today) && !renewalDay.isAfter(cutoff)
+            );
         })
         .sort((a, b) => dayjs(a.renewalDate).diff(dayjs(b.renewalDate)));
 }
@@ -155,13 +159,16 @@ export interface RenewalTimelineEntry {
     daysUntil: number;
 }
 
-export function getRenewalTimeline(subscriptions: Subscription[], withinDays = 30): RenewalTimelineEntry[] {
-    const today = dayjs().startOf("day");
+export function getRenewalTimeline(
+    subscriptions: Subscription[],
+    withinDays = 30,
+): RenewalTimelineEntry[] {
+    const today = dayjs().startOf('day');
 
     return getUpcomingRenewals(subscriptions, withinDays).map((subscription) => ({
         subscription,
         date: subscription.renewalDate!,
-        daysUntil: Math.max(0, dayjs(subscription.renewalDate).startOf("day").diff(today, "day")),
+        daysUntil: Math.max(0, dayjs(subscription.renewalDate).startOf('day').diff(today, 'day')),
     }));
 }
 
@@ -175,7 +182,12 @@ export interface BudgetUsage {
 export function getBudgetUsage(subscriptions: Subscription[], monthlyBudget: number): BudgetUsage {
     const spent = getMonthlySpend(subscriptions);
     const percentage = monthlyBudget > 0 ? (spent / monthlyBudget) * 100 : 0;
-    return { spent, budget: monthlyBudget, percentage, isOverBudget: monthlyBudget > 0 && spent > monthlyBudget };
+    return {
+        spent,
+        budget: monthlyBudget,
+        percentage,
+        isOverBudget: monthlyBudget > 0 && spent > monthlyBudget,
+    };
 }
 
 export interface TrialEntry {
@@ -186,14 +198,17 @@ export interface TrialEntry {
 
 /** Every trial that hasn't converted yet, soonest charge first. */
 export function getActiveTrials(subscriptions: Subscription[]): TrialEntry[] {
-    const today = dayjs().startOf("day");
+    const today = dayjs().startOf('day');
 
     return subscriptions
         .filter((sub) => isActive(sub) && isTrialing(sub))
         .map((subscription) => ({
             subscription,
             endsAt: subscription.trialEndsAt!,
-            daysUntilCharge: Math.max(0, dayjs(subscription.trialEndsAt).startOf("day").diff(today, "day")),
+            daysUntilCharge: Math.max(
+                0,
+                dayjs(subscription.trialEndsAt).startOf('day').diff(today, 'day'),
+            ),
         }))
         .sort((a, b) => a.daysUntilCharge - b.daysUntilCharge);
 }
@@ -223,7 +238,7 @@ export interface ReclaimedSavings {
  * cancelled set rather than stored, so it stays correct if history is edited.
  */
 export function getReclaimedSavings(subscriptions: Subscription[]): ReclaimedSavings {
-    const cancelled = subscriptions.filter((sub) => sub.status === "cancelled");
+    const cancelled = subscriptions.filter((sub) => sub.status === 'cancelled');
     const monthly = cancelled.reduce((sum, sub) => sum + monthlyEquivalent(sub), 0);
 
     const firstCancelledAt = cancelled
@@ -262,7 +277,7 @@ export function getCostPerUse(sub: Subscription): CostPerUse | null {
     if (uses <= 0) return null;
 
     const since = sub.usageSince ? dayjs(sub.usageSince) : null;
-    const monthsTracked = since?.isValid() ? Math.max(1, dayjs().diff(since, "month") + 1) : 1;
+    const monthsTracked = since?.isValid() ? Math.max(1, dayjs().diff(since, 'month') + 1) : 1;
 
     const spentOverPeriod = monthlyEquivalent(sub) * monthsTracked;
     const perUse = spentOverPeriod / uses;
@@ -276,18 +291,23 @@ export function getCostPerUse(sub: Subscription): CostPerUse | null {
 }
 
 /** Active subscriptions with a usage tally, worst value first. */
-export function getUsageRanking(subscriptions: Subscription[]): { subscription: Subscription; costPerUse: CostPerUse }[] {
+export function getUsageRanking(
+    subscriptions: Subscription[],
+): { subscription: Subscription; costPerUse: CostPerUse }[] {
     return subscriptions
-        .filter((sub) => sub.status === "active" && (sub.usageCount ?? 0) > 0)
+        .filter((sub) => sub.status === 'active' && (sub.usageCount ?? 0) > 0)
         .map((subscription) => ({ subscription, costPerUse: getCostPerUse(subscription)! }))
         .sort((a, b) => b.costPerUse.perUse - a.costPerUse.perUse);
 }
 
 /** Active subscriptions tracked long enough to expect a use, but never opened. */
-export function getUnusedSubscriptions(subscriptions: Subscription[], minDays = 30): Subscription[] {
-    const cutoff = dayjs().subtract(minDays, "day");
+export function getUnusedSubscriptions(
+    subscriptions: Subscription[],
+    minDays = 30,
+): Subscription[] {
+    const cutoff = dayjs().subtract(minDays, 'day');
     return subscriptions.filter((sub) => {
-        if (sub.status !== "active" || isTrialing(sub)) return false;
+        if (sub.status !== 'active' || isTrialing(sub)) return false;
         if ((sub.usageCount ?? 0) > 0) return false;
         const started = sub.startDate ? dayjs(sub.startDate) : null;
         return Boolean(started?.isValid() && started.isBefore(cutoff));
@@ -298,7 +318,7 @@ export interface IncomeContext {
     /** Share of monthly income going to subscriptions, 0–100. */
     percentage: number;
     /** Rough guidance band. Not financial advice — see the copy in the UI. */
-    band: "low" | "typical" | "high";
+    band: 'low' | 'typical' | 'high';
     monthlyIncome: number;
 }
 
@@ -309,12 +329,12 @@ export interface IncomeContext {
  */
 export function getIncomeContext(
     subscriptions: Subscription[],
-    monthlyIncome: number | undefined
+    monthlyIncome: number | undefined,
 ): IncomeContext | null {
     if (!monthlyIncome || !Number.isFinite(monthlyIncome) || monthlyIncome <= 0) return null;
 
     const percentage = (getMonthlySpend(subscriptions) / monthlyIncome) * 100;
-    const band = percentage < 3 ? "low" : percentage <= 8 ? "typical" : "high";
+    const band = percentage < 3 ? 'low' : percentage <= 8 ? 'typical' : 'high';
 
     return { percentage, band, monthlyIncome };
 }
@@ -334,7 +354,10 @@ export interface WhatIfResult {
  * lose people. Letting someone try combinations first, and see the annual number before
  * committing, is the nudge that turns intent into a cancellation.
  */
-export function simulateCancellations(subscriptions: Subscription[], removedIds: string[]): WhatIfResult {
+export function simulateCancellations(
+    subscriptions: Subscription[],
+    removedIds: string[],
+): WhatIfResult {
     const removed = new Set(removedIds);
     const kept = subscriptions.filter((sub) => !removed.has(sub.id));
 
@@ -352,7 +375,10 @@ export function simulateCancellations(subscriptions: Subscription[], removedIds:
 }
 
 /** Case-insensitive duplicate check, so the same service isn't tracked twice. */
-export function findDuplicateName(subscriptions: Subscription[], name: string): Subscription | null {
+export function findDuplicateName(
+    subscriptions: Subscription[],
+    name: string,
+): Subscription | null {
     const needle = name.trim().toLowerCase();
     if (!needle) return null;
     return subscriptions.find((sub) => sub.name.trim().toLowerCase() === needle) ?? null;
@@ -397,32 +423,35 @@ export interface CalendarDay {
  * Leading and trailing days from adjacent months are included but flagged via `dayOfMonth`
  * belonging to a different month — callers dim them.
  */
-export function getRenewalCalendar(subscriptions: Subscription[], monthAnchor = dayjs()): CalendarDay[] {
-    const monthStart = monthAnchor.startOf("month");
-    const monthEnd = monthAnchor.endOf("month");
-    const gridStart = monthStart.startOf("week");
-    const gridEnd = monthEnd.endOf("week");
-    const today = dayjs().startOf("day");
+export function getRenewalCalendar(
+    subscriptions: Subscription[],
+    monthAnchor = dayjs(),
+): CalendarDay[] {
+    const monthStart = monthAnchor.startOf('month');
+    const monthEnd = monthAnchor.endOf('month');
+    const gridStart = monthStart.startOf('week');
+    const gridEnd = monthEnd.endOf('week');
+    const today = dayjs().startOf('day');
 
     const dueByDay = new Map<string, Subscription[]>();
     for (const sub of subscriptions) {
-        if (sub.status !== "active" || !sub.renewalDate) continue;
+        if (sub.status !== 'active' || !sub.renewalDate) continue;
         const renewal = dayjs(sub.renewalDate);
         if (!renewal.isValid()) continue;
 
-        const key = renewal.format("YYYY-MM-DD");
+        const key = renewal.format('YYYY-MM-DD');
         dueByDay.set(key, [...(dueByDay.get(key) ?? []), sub]);
     }
 
     const days: CalendarDay[] = [];
-    for (let cursor = gridStart; !cursor.isAfter(gridEnd); cursor = cursor.add(1, "day")) {
-        const key = cursor.format("YYYY-MM-DD");
+    for (let cursor = gridStart; !cursor.isAfter(gridEnd); cursor = cursor.add(1, 'day')) {
+        const key = cursor.format('YYYY-MM-DD');
         const renewals = dueByDay.get(key) ?? [];
 
         days.push({
             date: cursor.toISOString(),
             dayOfMonth: cursor.date(),
-            isToday: cursor.isSame(today, "day"),
+            isToday: cursor.isSame(today, 'day'),
             renewals,
             total: renewals.reduce((sum, sub) => sum + personalPrice(sub), 0),
         });
@@ -433,7 +462,7 @@ export function getRenewalCalendar(subscriptions: Subscription[], monthAnchor = 
 
 /** True when the day belongs to the month being displayed rather than the padding. */
 export function isInMonth(day: CalendarDay, monthAnchor = dayjs()): boolean {
-    return dayjs(day.date).isSame(monthAnchor, "month");
+    return dayjs(day.date).isSame(monthAnchor, 'month');
 }
 
 export interface SpendHistoryPoint {
@@ -459,12 +488,16 @@ export function priceAt(sub: Subscription, when: dayjs.Dayjs): number {
 }
 
 /** Whether a subscription was being billed during the given month. */
-function wasBillingDuring(sub: Subscription, monthStart: dayjs.Dayjs, monthEnd: dayjs.Dayjs): boolean {
+function wasBillingDuring(
+    sub: Subscription,
+    monthStart: dayjs.Dayjs,
+    monthEnd: dayjs.Dayjs,
+): boolean {
     const started = sub.startDate ? dayjs(sub.startDate) : null;
     if (started?.isValid() && started.isAfter(monthEnd)) return false;
 
     // A subscription that was stopped counts up to the month it was stopped in.
-    if (sub.status === "cancelled" || sub.status === "paused") {
+    if (sub.status === 'cancelled' || sub.status === 'paused') {
         const stoppedAt = sub.statusChangedAt ? dayjs(sub.statusChangedAt) : null;
         if (!stoppedAt?.isValid()) return false;
         if (stoppedAt.isBefore(monthStart)) return false;
@@ -485,22 +518,22 @@ function wasBillingDuring(sub: Subscription, monthStart: dayjs.Dayjs, monthEnd: 
  * stays correct when the user edits their history.
  */
 export function getSpendHistory(subscriptions: Subscription[], months = 6): SpendHistoryPoint[] {
-    const thisMonth = dayjs().startOf("month");
+    const thisMonth = dayjs().startOf('month');
 
     return Array.from({ length: months }, (_, index) => {
-        const monthStart = thisMonth.subtract(months - 1 - index, "month");
-        const monthEnd = monthStart.endOf("month");
+        const monthStart = thisMonth.subtract(months - 1 - index, 'month');
+        const monthEnd = monthStart.endOf('month');
 
         const amount = subscriptions
             .filter((sub) => wasBillingDuring(sub, monthStart, monthEnd))
             .reduce((sum, sub) => {
                 const historicPrice = priceAt(sub, monthEnd);
                 const share = historicPrice / householdSizeOf(sub);
-                const billing = sub.billing?.toLowerCase() ?? "";
+                const billing = sub.billing?.toLowerCase() ?? '';
                 return sum + (MONTHLY_BILLING_VALUES.has(billing) ? share : share / 12);
             }, 0);
 
-        return { label: monthStart.format("MMM"), monthStart: monthStart.toISOString(), amount };
+        return { label: monthStart.format('MMM'), monthStart: monthStart.toISOString(), amount };
     });
 }
 
@@ -530,12 +563,12 @@ export interface AnnualUpgradeNudge {
  */
 export function detectAnnualUpgradeCandidates(
     subscriptions: Subscription[],
-    minMonthlySpend = 4
+    minMonthlySpend = 4,
 ): AnnualUpgradeNudge[] {
     return subscriptions
         .filter((sub) => {
             if (!isActive(sub) || isTrialing(sub)) return false;
-            if (!MONTHLY_BILLING_VALUES.has(sub.billing?.toLowerCase() ?? "")) return false;
+            if (!MONTHLY_BILLING_VALUES.has(sub.billing?.toLowerCase() ?? '')) return false;
             return monthlyEquivalent(sub) >= minMonthlySpend;
         })
         .map((subscription) => {
@@ -559,7 +592,7 @@ export function getSharedSubscriptions(subscriptions: Subscription[]): Subscript
 /** What sharing saves the user each month versus paying every plan alone. */
 export function getSharingSavings(subscriptions: Subscription[]): number {
     return getSharedSubscriptions(subscriptions).reduce((sum, sub) => {
-        const billing = sub.billing?.toLowerCase() ?? "";
+        const billing = sub.billing?.toLowerCase() ?? '';
         const fullMonthly = MONTHLY_BILLING_VALUES.has(billing) ? sub.price : sub.price / 12;
         return sum + (fullMonthly - monthlyEquivalent(sub));
     }, 0);
@@ -589,7 +622,10 @@ export function detectDuplicateCategories(subscriptions: Subscription[]): Duplic
 export function detectStalePaused(subscriptions: Subscription[], days = 30): Subscription[] {
     const now = dayjs();
     return subscriptions.filter(
-        (sub) => sub.status === "paused" && sub.statusChangedAt && now.diff(dayjs(sub.statusChangedAt), "day") >= days
+        (sub) =>
+            sub.status === 'paused' &&
+            sub.statusChangedAt &&
+            now.diff(dayjs(sub.statusChangedAt), 'day') >= days,
     );
 }
 
@@ -602,7 +638,7 @@ export interface PriceHikeNudge {
 
 /** Flags subscriptions whose most recent price change was an increase within the last 90 days. */
 export function detectPriceHikes(subscriptions: Subscription[], withinDays = 90): PriceHikeNudge[] {
-    const cutoff = dayjs().subtract(withinDays, "day");
+    const cutoff = dayjs().subtract(withinDays, 'day');
     const nudges: PriceHikeNudge[] = [];
 
     for (const sub of subscriptions) {

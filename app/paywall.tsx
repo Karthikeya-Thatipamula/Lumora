@@ -14,11 +14,19 @@ export default function Paywall() {
         return (
             <SafeAreaView className="flex-1 items-center justify-center gap-4 bg-background p-6">
                 <Text style={{ fontSize: 40 }}>🚧</Text>
-                <Text className="text-center text-lg font-sans-bold text-primary">Pro isn&apos;t set up yet</Text>
-                <Text className="text-center text-sm font-sans-medium text-muted-foreground">
-                    This build doesn&apos;t have RevenueCat configured, so there&apos;s nothing to purchase yet.
+                <Text className="text-center text-lg font-sans-bold text-primary">
+                    Pro isn&apos;t set up yet
                 </Text>
-                <Pressable className="auth-button px-8" onPress={() => safeBack(router)} accessibilityRole="button" accessibilityLabel="Close">
+                <Text className="text-center text-sm font-sans-medium text-muted-foreground">
+                    This build doesn&apos;t have RevenueCat configured, so there&apos;s nothing to
+                    purchase yet.
+                </Text>
+                <Pressable
+                    className="auth-button px-8"
+                    onPress={() => safeBack(router)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Close"
+                >
                     <Text className="auth-button-text">Close</Text>
                 </Pressable>
             </SafeAreaView>
@@ -33,7 +41,9 @@ export default function Paywall() {
                 safeBack(router);
             }}
             onRestoreCompleted={({ customerInfo }) => {
-                posthog.capture('pro_restore_completed', { has_entitlements: Object.keys(customerInfo.entitlements.active).length > 0 });
+                posthog.capture('pro_restore_completed', {
+                    has_entitlements: Object.keys(customerInfo.entitlements.active).length > 0,
+                });
                 safeBack(router);
             }}
         />

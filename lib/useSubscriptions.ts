@@ -1,20 +1,20 @@
-import { CATEGORY_COLORS, SubscriptionFormValues } from "@/lib/subscriptionTypes";
-import { api } from "@/convex/_generated/api";
-import { Doc, Id } from "@/convex/_generated/dataModel";
-import { DEFAULT_CURRENCY } from "@/lib/currency";
-import { cancelAllRemindersFor } from "@/lib/notifications";
-import { useAuth } from "@clerk/expo";
-import { useConvexAuth, useMutation, useQuery } from "convex/react";
-import dayjs from "dayjs";
-import { useMemo } from "react";
+import { CATEGORY_COLORS, SubscriptionFormValues } from '@/lib/subscriptionTypes';
+import { api } from '@/convex/_generated/api';
+import { Doc, Id } from '@/convex/_generated/dataModel';
+import { DEFAULT_CURRENCY } from '@/lib/currency';
+import { cancelAllRemindersFor } from '@/lib/notifications';
+import { useAuth } from '@clerk/expo';
+import { useConvexAuth, useMutation, useQuery } from 'convex/react';
+import dayjs from 'dayjs';
+import { useMemo } from 'react';
 
 export const DEFAULT_TRIAL_DAYS = 7;
 
-function nextRenewalDate(frequency: SubscriptionFormValues["frequency"], from = dayjs()) {
-    return frequency === "Monthly" ? from.add(1, "month") : from.add(1, "year");
+function nextRenewalDate(frequency: SubscriptionFormValues['frequency'], from = dayjs()) {
+    return frequency === 'Monthly' ? from.add(1, 'month') : from.add(1, 'year');
 }
 
-function mapSubscription(doc: Doc<"subscriptions">): Subscription {
+function mapSubscription(doc: Doc<'subscriptions'>): Subscription {
     return {
         id: doc._id,
         name: doc.name,
@@ -61,7 +61,7 @@ export function useSubscription(id: string | undefined) {
 
     const doc = useQuery(
         api.subscriptions.get,
-        canQuery && id ? { id: id as Id<"subscriptions"> } : "skip"
+        canQuery && id ? { id: id as Id<'subscriptions'> } : 'skip',
     );
 
     const subscription = useMemo(() => (doc ? mapSubscription(doc) : null), [doc]);
@@ -75,7 +75,7 @@ export function useSubscriptions() {
 
     // A live subscription: every mutation below re-pushes to all consumers, so the
     // Home, Subscriptions, Insights and detail screens can never drift out of sync.
-    const docs = useQuery(api.subscriptions.list, canQuery ? {} : "skip");
+    const docs = useQuery(api.subscriptions.list, canQuery ? {} : 'skip');
 
     const subscriptions = useMemo(() => (docs ?? []).map(mapSubscription), [docs]);
     const isLoading = isAuthResolving || (canQuery && docs === undefined);
@@ -90,7 +90,9 @@ export function useSubscriptions() {
 
     const assertAuthenticated = () => {
         if (!canQuery) {
-            throw new Error("Please wait for your secure data connection before managing subscriptions.");
+            throw new Error(
+                'Please wait for your secure data connection before managing subscriptions.',
+            );
         }
     };
 
@@ -99,7 +101,7 @@ export function useSubscriptions() {
         const now = dayjs();
         // A trial's first charge lands the day it ends, so that date is the renewal.
         const trialEnd = values.isTrial
-            ? now.add(values.trialDays ?? DEFAULT_TRIAL_DAYS, "day")
+            ? now.add(values.trialDays ?? DEFAULT_TRIAL_DAYS, 'day')
             : null;
 
         return await createMutation({
@@ -108,7 +110,7 @@ export function useSubscriptions() {
             currency: values.currency ?? DEFAULT_CURRENCY,
             billing: values.frequency,
             category: values.category,
-            status: "active",
+            status: 'active',
             startDate: now.toISOString(),
             renewalDate: (trialEnd ?? nextRenewalDate(values.frequency, now)).toISOString(),
             color: CATEGORY_COLORS[values.category],
@@ -131,7 +133,7 @@ export function useSubscriptions() {
             isTrial: wantsTrial,
         };
         if (wantsTrial && !wasTrial) {
-            const trialEnd = dayjs().add(values.trialDays ?? DEFAULT_TRIAL_DAYS, "day");
+            const trialEnd = dayjs().add(values.trialDays ?? DEFAULT_TRIAL_DAYS, 'day');
             trialFields = {
                 isTrial: true,
                 trialEndsAt: trialEnd.toISOString(),
@@ -145,7 +147,7 @@ export function useSubscriptions() {
         }
 
         return await updateMutation({
-            id: id as Id<"subscriptions">,
+            id: id as Id<'subscriptions'>,
             name: values.name,
             price: values.price,
             billing: values.frequency,
@@ -159,10 +161,10 @@ export function useSubscriptions() {
     };
 
     /** Converts a running trial into a paid subscription starting one full cycle from now. */
-    const endTrial = async (id: string, frequency: SubscriptionFormValues["frequency"]) => {
+    const endTrial = async (id: string, frequency: SubscriptionFormValues['frequency']) => {
         assertAuthenticated();
         return await endTrialMutation({
-            id: id as Id<"subscriptions">,
+            id: id as Id<'subscriptions'>,
             renewalDate: nextRenewalDate(frequency).toISOString(),
         });
     };
@@ -170,25 +172,25 @@ export function useSubscriptions() {
     /** Records one use. Pass -1 to undo a mis-tap. */
     const logUsage = async (id: string, delta: 1 | -1 = 1) => {
         assertAuthenticated();
-        return await logUsageMutation({ id: id as Id<"subscriptions">, delta });
+        return await logUsageMutation({ id: id as Id<'subscriptions'>, delta });
     };
 
     const resetUsage = async (id: string) => {
         assertAuthenticated();
-        return await resetUsageMutation({ id: id as Id<"subscriptions"> });
+        return await resetUsageMutation({ id: id as Id<'subscriptions'> });
     };
 
-    const setSubscriptionStatus = async (id: string, status: "active" | "paused" | "cancelled") => {
+    const setSubscriptionStatus = async (id: string, status: 'active' | 'paused' | 'cancelled') => {
         assertAuthenticated();
         // Paused and cancelled subscriptions must stop nagging immediately.
-        if (status !== "active") await cancelAllRemindersFor(id);
-        return await setStatusMutation({ id: id as Id<"subscriptions">, status });
+        if (status !== 'active') await cancelAllRemindersFor(id);
+        return await setStatusMutation({ id: id as Id<'subscriptions'>, status });
     };
 
     const deleteSubscription = async (id: string) => {
         assertAuthenticated();
         await cancelAllRemindersFor(id);
-        return await removeMutation({ id: id as Id<"subscriptions"> });
+        return await removeMutation({ id: id as Id<'subscriptions'> });
     };
 
     /**

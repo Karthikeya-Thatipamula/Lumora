@@ -24,7 +24,13 @@ interface RenewalCalendarProps {
  * "is my money clustered in one week" — which is the question people actually have
  * when a month feels expensive.
  */
-const RenewalCalendar = ({ days, monthAnchor, onPrevMonth, onNextMonth, currency }: RenewalCalendarProps) => {
+const RenewalCalendar = ({
+    days,
+    monthAnchor,
+    onPrevMonth,
+    onNextMonth,
+    currency,
+}: RenewalCalendarProps) => {
     const themeColors = useThemeColors();
     const [selected, setSelected] = useState<CalendarDay | null>(null);
 
@@ -45,7 +51,9 @@ const RenewalCalendar = ({ days, monthAnchor, onPrevMonth, onNextMonth, currency
                 </PressableScale>
 
                 <View className="items-center">
-                    <Text className="text-base font-sans-semibold text-primary">{monthAnchor.format('MMMM YYYY')}</Text>
+                    <Text className="text-base font-sans-semibold text-primary">
+                        {monthAnchor.format('MMMM YYYY')}
+                    </Text>
                     <Text className="text-xs font-sans-medium text-muted-foreground">
                         {formatCurrency(monthTotal, currency)} due
                     </Text>
@@ -64,7 +72,9 @@ const RenewalCalendar = ({ days, monthAnchor, onPrevMonth, onNextMonth, currency
             <View className="flex-row">
                 {WEEKDAY_LABELS.map((label, index) => (
                     <View key={`${label}-${index}`} className="flex-1 items-center">
-                        <Text className="text-[10px] font-sans-semibold text-muted-foreground">{label}</Text>
+                        <Text className="text-[10px] font-sans-semibold text-muted-foreground">
+                            {label}
+                        </Text>
                     </View>
                 ))}
             </View>
@@ -76,13 +86,17 @@ const RenewalCalendar = ({ days, monthAnchor, onPrevMonth, onNextMonth, currency
                     const isSelected = selected?.date === day.date;
 
                     return (
-                        <View key={day.date} style={{ width: `${100 / 7}%` }} className="items-center py-1">
+                        <View
+                            key={day.date}
+                            style={{ width: `${100 / 7}%` }}
+                            className="items-center py-1"
+                        >
                             <PressableScale
                                 scaleTo={0.9}
                                 className={clsx(
                                     'size-9 items-center justify-center rounded-full',
                                     day.isToday && 'border border-accent',
-                                    isSelected && 'bg-accent'
+                                    isSelected && 'bg-accent',
                                 )}
                                 disabled={!hasRenewals}
                                 onPress={() => setSelected(isSelected ? null : day)}
@@ -111,7 +125,12 @@ const RenewalCalendar = ({ days, monthAnchor, onPrevMonth, onNextMonth, currency
                             {/* Dot marks a billing day at a glance without crowding the cell. */}
                             <View
                                 className="mt-0.5 size-1.5 rounded-full"
-                                style={{ backgroundColor: hasRenewals && !isSelected ? themeColors.accent : 'transparent' }}
+                                style={{
+                                    backgroundColor:
+                                        hasRenewals && !isSelected
+                                            ? themeColors.accent
+                                            : 'transparent',
+                                }}
                             />
                         </View>
                     );
@@ -125,11 +144,15 @@ const RenewalCalendar = ({ days, monthAnchor, onPrevMonth, onNextMonth, currency
                     className="gap-2 rounded-2xl bg-background p-3"
                 >
                     <Text className="text-sm font-sans-bold text-primary">
-                        {dayjs(selected.date).format('MMMM D')} · {formatCurrency(selected.total, currency)}
+                        {dayjs(selected.date).format('MMMM D')} ·{' '}
+                        {formatCurrency(selected.total, currency)}
                     </Text>
                     {selected.renewals.map((sub) => (
                         <View key={sub.id} className="flex-row items-center justify-between gap-3">
-                            <Text className="flex-1 text-xs font-sans-medium text-muted-foreground" numberOfLines={1}>
+                            <Text
+                                className="flex-1 text-xs font-sans-medium text-muted-foreground"
+                                numberOfLines={1}
+                            >
                                 {sub.name}
                             </Text>
                             <Text className="text-xs font-sans-semibold text-primary">

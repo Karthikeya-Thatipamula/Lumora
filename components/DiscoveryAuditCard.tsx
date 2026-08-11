@@ -20,7 +20,12 @@ interface DiscoveryAuditCardProps {
  * credentials; this closes most of it by simply asking, which costs the user no access
  * at all.
  */
-const DiscoveryAuditCard = ({ prompts, coveragePercentage, onAdd, onDismiss }: DiscoveryAuditCardProps) => {
+const DiscoveryAuditCard = ({
+    prompts,
+    coveragePercentage,
+    onAdd,
+    onDismiss,
+}: DiscoveryAuditCardProps) => {
     if (prompts.length === 0) return null;
 
     return (
@@ -32,13 +37,17 @@ const DiscoveryAuditCard = ({ prompts, coveragePercentage, onAdd, onDismiss }: D
             <View className="gap-1">
                 <Text className="text-lg font-sans-bold text-primary">Anything missing?</Text>
                 <Text className="text-sm font-sans-medium text-muted-foreground">
-                    Lumora can only track what you tell it. These are the ones people most often forget.
+                    Lumora can only track what you tell it. These are the ones people most often
+                    forget.
                 </Text>
             </View>
 
             <View className="gap-1.5">
                 <View className="h-1.5 overflow-hidden rounded-full bg-muted">
-                    <View className="h-1.5 rounded-full bg-success" style={{ width: `${coveragePercentage}%` }} />
+                    <View
+                        className="h-1.5 rounded-full bg-success"
+                        style={{ width: `${coveragePercentage}%` }}
+                    />
                 </View>
                 <Text className="text-xs font-sans-medium text-muted-foreground">
                     {coveragePercentage}% of common categories accounted for
@@ -54,19 +63,26 @@ const DiscoveryAuditCard = ({ prompts, coveragePercentage, onAdd, onDismiss }: D
                         className="gap-2 rounded-2xl bg-background p-3"
                     >
                         <View className="flex-row items-start justify-between gap-3">
-                            <Text className="flex-1 text-sm font-sans-semibold text-primary">{group.prompt}</Text>
+                            <Text className="flex-1 text-sm font-sans-semibold text-primary">
+                                {group.prompt}
+                            </Text>
                             <PressableScale
                                 onPress={() => onDismiss(group.id)}
                                 accessibilityRole="button"
                                 accessibilityLabel={`Dismiss ${group.label} suggestion`}
                                 hitSlop={10}
                             >
-                                <Text className="text-xs font-sans-semibold text-muted-foreground">Not me</Text>
+                                <Text className="text-xs font-sans-semibold text-muted-foreground">
+                                    Not me
+                                </Text>
                             </PressableScale>
                         </View>
 
                         <View className="flex-row flex-wrap gap-2">
-                            {(quickAdds.length > 0 ? quickAdds.map((entry) => entry.name) : group.examples).map((name) => (
+                            {(quickAdds.length > 0
+                                ? quickAdds.map((entry) => entry.name)
+                                : group.examples
+                            ).map((name) => (
                                 <PressableScale
                                     key={name}
                                     className="category-chip"

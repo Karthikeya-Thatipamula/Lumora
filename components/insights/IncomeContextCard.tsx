@@ -39,7 +39,11 @@ const IncomeContextCard = ({ context, monthlySpend, currency, onSave }: IncomeCo
         const trimmed = draft.trim();
         const value = Number(trimmed);
 
-        if (trimmed === '' || !/^\+?(\d+(\.\d+)?|\.\d+)$/.test(trimmed) || !Number.isFinite(value)) {
+        if (
+            trimmed === '' ||
+            !/^\+?(\d+(\.\d+)?|\.\d+)$/.test(trimmed) ||
+            !Number.isFinite(value)
+        ) {
             setError('Enter a number, like 2500');
             return;
         }
@@ -62,8 +66,8 @@ const IncomeContextCard = ({ context, monthlySpend, currency, onSave }: IncomeCo
             <View className="auth-card gap-3">
                 <Text className="text-base font-sans-semibold text-primary">Income context</Text>
                 <Text className="text-sm font-sans-medium text-muted-foreground">
-                    Add your monthly take-home and Lumora shows what share of it goes to subscriptions.
-                    Stored with your account and never shared.
+                    Add your monthly take-home and Lumora shows what share of it goes to
+                    subscriptions. Stored with your account and never shared.
                 </Text>
                 <View className="flex-row gap-3">
                     <TextInput
@@ -94,7 +98,11 @@ const IncomeContextCard = ({ context, monthlySpend, currency, onSave }: IncomeCo
 
     const barWidth = Math.min(100, context.percentage);
     const barColor =
-        context.band === 'high' ? themeColors.destructive : context.band === 'typical' ? themeColors.accent : themeColors.success;
+        context.band === 'high'
+            ? themeColors.destructive
+            : context.band === 'typical'
+              ? themeColors.accent
+              : themeColors.success;
 
     return (
         <View className="auth-card gap-3">
@@ -118,16 +126,22 @@ const IncomeContextCard = ({ context, monthlySpend, currency, onSave }: IncomeCo
 
             <Text className="text-3xl font-sans-extrabold text-primary">
                 {context.percentage.toFixed(1)}%
-                <Text className="text-base font-sans-medium text-muted-foreground"> of your income</Text>
+                <Text className="text-base font-sans-medium text-muted-foreground">
+                    {' '}
+                    of your income
+                </Text>
             </Text>
 
             <View className="h-3 overflow-hidden rounded-full bg-muted">
-                <View className="h-3 rounded-full" style={{ width: `${barWidth}%`, backgroundColor: barColor }} />
+                <View
+                    className="h-3 rounded-full"
+                    style={{ width: `${barWidth}%`, backgroundColor: barColor }}
+                />
             </View>
 
             <Text className="text-sm font-sans-medium text-muted-foreground">
-                {formatCurrency(monthlySpend, currency)} of {formatCurrency(context.monthlyIncome, currency)} a month.
-                {' '}{BAND_COPY[context.band]}
+                {formatCurrency(monthlySpend, currency)} of{' '}
+                {formatCurrency(context.monthlyIncome, currency)} a month. {BAND_COPY[context.band]}
             </Text>
         </View>
     );

@@ -23,7 +23,12 @@ interface AccordionItemProps {
  * rather than a measured height value — measuring wraps badly when text reflows at
  * different font scales, and the layout transition handles it for free.
  */
-export const AccordionItem = ({ title, children, defaultOpen = false, onToggle }: AccordionItemProps) => {
+export const AccordionItem = ({
+    title,
+    children,
+    defaultOpen = false,
+    onToggle,
+}: AccordionItemProps) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
     const rotation = useSharedValue(defaultOpen ? 1 : 0);
 
@@ -34,12 +39,18 @@ export const AccordionItem = ({ title, children, defaultOpen = false, onToggle }
     const toggle = () => {
         const next = !isOpen;
         setIsOpen(next);
-        rotation.value = withTiming(next ? 1 : 0, { duration: 220, easing: Easing.out(Easing.quad) });
+        rotation.value = withTiming(next ? 1 : 0, {
+            duration: 220,
+            easing: Easing.out(Easing.quad),
+        });
         onToggle?.(next);
     };
 
     return (
-        <AnimatedView layout={LinearTransition.duration(220)} className="overflow-hidden rounded-2xl border border-border bg-card">
+        <AnimatedView
+            layout={LinearTransition.duration(220)}
+            className="overflow-hidden rounded-2xl border border-border bg-card"
+        >
             <Pressable
                 className="flex-row items-center justify-between gap-3 p-4"
                 onPress={toggle}
@@ -54,7 +65,11 @@ export const AccordionItem = ({ title, children, defaultOpen = false, onToggle }
             </Pressable>
 
             {isOpen && (
-                <AnimatedView entering={FadeIn.duration(180)} exiting={FadeOut.duration(120)} className="px-4 pb-4">
+                <AnimatedView
+                    entering={FadeIn.duration(180)}
+                    exiting={FadeOut.duration(120)}
+                    className="px-4 pb-4"
+                >
                     {children}
                 </AnimatedView>
             )}

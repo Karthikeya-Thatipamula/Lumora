@@ -18,7 +18,14 @@ interface AuthTextFieldProps extends Omit<TextInputProps, 'onBlur' | 'className'
  * One field implementation for both auth screens: focus ring, error state, and the
  * password reveal toggle. Previously each screen hand-rolled its own and they drifted.
  */
-const AuthTextField = ({ label, error, hint, onBlur, secure = false, ...inputProps }: AuthTextFieldProps) => {
+const AuthTextField = ({
+    label,
+    error,
+    hint,
+    onBlur,
+    secure = false,
+    ...inputProps
+}: AuthTextFieldProps) => {
     const themeColors = useThemeColors();
     const [isFocused, setIsFocused] = useState(false);
     const [isRevealed, setIsRevealed] = useState(false);
@@ -33,7 +40,7 @@ const AuthTextField = ({ label, error, hint, onBlur, secure = false, ...inputPro
                         'auth-input',
                         secure && 'pr-16',
                         isFocused && !error && 'auth-input-focused',
-                        error && 'auth-input-error'
+                        error && 'auth-input-error',
                     )}
                     placeholderTextColor={themeColors.placeholder}
                     secureTextEntry={secure && !isRevealed}

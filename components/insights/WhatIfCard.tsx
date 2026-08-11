@@ -24,18 +24,20 @@ const WhatIfCard = ({ subscriptions, currency }: WhatIfCardProps) => {
 
     const candidates = useMemo(
         () => subscriptions.filter((sub) => sub.status === 'active'),
-        [subscriptions]
+        [subscriptions],
     );
 
     const result = useMemo(
         () => simulateCancellations(subscriptions, removedIds),
-        [subscriptions, removedIds]
+        [subscriptions, removedIds],
     );
 
     if (candidates.length === 0) return null;
 
     const toggle = (id: string) =>
-        setRemovedIds((ids) => (ids.includes(id) ? ids.filter((existing) => existing !== id) : [...ids, id]));
+        setRemovedIds((ids) =>
+            ids.includes(id) ? ids.filter((existing) => existing !== id) : [...ids, id],
+        );
 
     return (
         <View className="auth-card gap-4">
@@ -54,13 +56,21 @@ const WhatIfCard = ({ subscriptions, currency }: WhatIfCardProps) => {
                     return (
                         <PressableScale
                             key={sub.id}
-                            className={clsx('category-chip', isRemoved && 'border-destructive/50 bg-destructive/10')}
+                            className={clsx(
+                                'category-chip',
+                                isRemoved && 'border-destructive/50 bg-destructive/10',
+                            )}
                             onPress={() => toggle(sub.id)}
                             accessibilityRole="button"
                             accessibilityState={{ selected: isRemoved }}
                             accessibilityLabel={`${isRemoved ? 'Restore' : 'Remove'} ${sub.name} from the simulation`}
                         >
-                            <Text className={clsx('category-chip-text', isRemoved && 'text-destructive line-through')}>
+                            <Text
+                                className={clsx(
+                                    'category-chip-text',
+                                    isRemoved && 'text-destructive line-through',
+                                )}
+                            >
                                 {sub.name}
                             </Text>
                         </PressableScale>
