@@ -9,7 +9,6 @@ nativewind-env.d.ts
 # Build output and staging.
 dist/
 web-build/
-.logic-test-build/
 
 # Dependencies and lockfiles.
 node_modules/
@@ -17,3 +16,4 @@ package-lock.json
 
 # Binary and vendored assets.
 assets/
+coverage/

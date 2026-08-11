@@ -13,8 +13,10 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
     "check:interop": "node scripts/check-classname-interop.mjs",
-    "test:logic": "node scripts/test-logic.mjs",
-    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run check:interop && npm run test:logic"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage",
+    "verify": "npm run format:check && npm run lint && npm run typecheck && npm run check:interop && npm run test"
   },
   "dependencies": {
     "@clerk/expo": "^3.3.0",
@@ -67,10 +69,14 @@
   "devDependencies": {
     "@convex-dev/eslint-plugin": "3.0.0",
     "@tailwindcss/postcss": "^4.3.0",
+    "@testing-library/react-native": "^14.0.1",
+    "@types/jest": "^29.5.14",
     "@types/react": "~19.1.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "eslint-config-prettier": "10.1.8",
+    "jest": "~29.7.0",
+    "jest-expo": "~54.0.17",
     "postcss": "^8.5.15",
     "prettier": "3.9.6",
     "tailwindcss": "^4.3.0",

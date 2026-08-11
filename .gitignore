@@ -43,5 +43,6 @@ app-example
 /ios
 /android
 
-# logic test staging
-.logic-test-build/
+
+# test coverage
+coverage/

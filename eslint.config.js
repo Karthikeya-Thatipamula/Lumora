@@ -34,17 +34,9 @@ const layerZones = [
 
 module.exports = defineConfig([
     {
-        // Generated, vendored, or build-staging output. `scripts/logic-tests` imports
-        // `./src/*` paths that only exist while `test-logic.mjs` is mid-run, which is why
-        // `npx eslint .` used to report 9 unresolved-import errors on a clean tree.
-        ignores: [
-            'dist/*',
-            '.expo/**',
-            'convex/_generated/**',
-            'scripts/logic-tests/**',
-            '.logic-test-build/**',
-            'node_modules/**',
-        ],
+        // Generated or vendored output only — everything else must be linted for the
+        // gate to mean anything.
+        ignores: ['dist/*', '.expo/**', 'convex/_generated/**', 'coverage/**', 'node_modules/**'],
     },
 
     expoConfig,
@@ -115,6 +107,23 @@ module.exports = defineConfig([
         // Build scripts are Node, not React Native, and reporting progress is their job.
         files: ['scripts/**/*.mjs', 'eslint-rules/**/*.js', '*.config.js', '*.config.mjs'],
         rules: { 'no-console': 'off' },
+    },
+
+    {
+        files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', 'jest.setup.js'],
+        languageOptions: {
+            globals: {
+                afterAll: 'readonly',
+                afterEach: 'readonly',
+                beforeAll: 'readonly',
+                beforeEach: 'readonly',
+                describe: 'readonly',
+                expect: 'readonly',
+                it: 'readonly',
+                jest: 'readonly',
+                test: 'readonly',
+            },
+        },
     },
 
     // Must stay last: turns off every stylistic rule Prettier owns.

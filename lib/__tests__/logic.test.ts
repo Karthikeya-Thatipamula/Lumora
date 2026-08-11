@@ -1,16 +1,27 @@
 /**
- * Logic test suite for Lumora's pure modules.
+ * Logic suite for Lumora's pure modules — the ones deliberately kept free of React and
+ * native code so their maths can be checked headlessly.
  *
- * Everything under test here is deliberately free of React and native modules, so it can
- * be compiled with tsc and run under plain node — no Jest, no test-runner dependency, no
- * native mocking. Run with `npm run test:logic`.
+ * Ported from scripts/logic-tests/run.ts, which staged rewritten copies of these modules
+ * into a temp dir, compiled them with tsc and ran them under plain node. Jest resolves
+ * `@/` natively, so the staging is gone.
+ *
+ * The assertions are unchanged, including their comparison semantics. The original
+ * `check` compared `JSON.stringify` output, which differs from `toEqual` on key order and
+ * on `undefined`; swapping matchers would have quietly changed what 265 assertions mean.
+ * So the string comparison is kept, with a structural `toEqual` fired first purely to get
+ * a readable diff when the shapes differ.
+ *
+ * Cases are registered eagerly, as they were in the script, and handed to Jest at the
+ * bottom of the file. That preserves the original top-to-bottom evaluation order and lets
+ * fixtures declared in one section stay visible to later ones.
  */
 import dayjs from 'dayjs';
-import { easeOutCubic, interpolateValue, shouldAnimateChange } from './src/animation';
-import { buildSubscriptionsCsv, escapeCsv } from './src/csv';
-import { findImportDuplicates, parseCsvLine, parseSubscriptionsCsv } from './src/csvImport';
-import { getCancellationUrl, getDiscoveryCoverage, getDiscoveryPrompts } from './src/discovery';
-import { getAvatarColor, getInitials, resolveIconKey } from './src/icon-resolver';
+import { easeOutCubic, interpolateValue, shouldAnimateChange } from '@/lib/animation';
+import { buildSubscriptionsCsv, escapeCsv } from '@/lib/csv';
+import { findImportDuplicates, parseCsvLine, parseSubscriptionsCsv } from '@/lib/csvImport';
+import { getCancellationUrl, getDiscoveryCoverage, getDiscoveryPrompts } from '@/lib/discovery';
+import { getAvatarColor, getInitials, resolveIconKey } from '@/lib/icon-resolver';
 import {
     detectAnnualUpgradeCandidates,
     detectPriceHikes,
@@ -42,32 +53,41 @@ import {
     personalPrice,
     priceAt,
     simulateCancellations,
-} from './src/insights';
-import { describePasswordStrength } from './src/passwordStrength';
+} from '@/lib/insights';
+import { describePasswordStrength } from '@/lib/passwordStrength';
 import {
     countsByFilter,
     filterAndSort,
     knownPaymentMethods,
     matchesSearch,
-} from './src/subscriptionFilters';
-import { formatCurrency, formatStatusLabel, formatSubscriptionDateTime } from './src/utils';
+} from '@/lib/subscriptionFilters';
+import { formatCurrency, formatStatusLabel, formatSubscriptionDateTime } from '@/lib/utils';
 
-let passed = 0;
-const failures: string[] = [];
-
-function check(name: string, actual: unknown, expected: unknown) {
-    const a = JSON.stringify(actual);
-    const e = JSON.stringify(expected);
-    if (a === e) {
-        passed += 1;
-    } else {
-        failures.push(`${name}: expected ${e}, got ${a}`);
-        console.log(`  FAIL  ${name} — expected ${e}, got ${a}`);
-    }
+interface LogicCase {
+    name: string;
+    run: () => void;
 }
 
+const groups: { name: string; cases: LogicCase[] }[] = [];
+let current: LogicCase[] = [];
+
 function section(name: string) {
-    console.log(`\n── ${name} ──`);
+    current = [];
+    groups.push({ name, cases: current });
+}
+
+function check(name: string, actual: unknown, expected: unknown) {
+    current.push({
+        name,
+        run: () => {
+            const a = JSON.stringify(actual);
+            const e = JSON.stringify(expected);
+            if (a === e) return;
+            // Structural first, for the diff; then the exact comparison the suite used.
+            expect(actual).toEqual(expected);
+            expect(a).toBe(e);
+        },
+    });
 }
 
 const iso = (daysFromNow: number) => dayjs().add(daysFromNow, 'day').toISOString();
@@ -1148,9 +1168,18 @@ check(
     ]).coveredGroups.includes('streaming'),
     true,
 );
-console.log('\n──────────────────────────────');
-console.log(`${passed} passed, ${failures.length} failed`);
-if (failures.length > 0) {
-    console.log('\nFAILURES:\n  - ' + failures.join('\n  - '));
-    process.exit(1);
+
+for (const group of groups) {
+    describe(group.name, () => {
+        for (const logicCase of group.cases) {
+            it(logicCase.name, logicCase.run);
+        }
+    });
 }
+
+describe('suite integrity', () => {
+    it('still registers every assertion carried over from the node runner', () => {
+        const total = groups.reduce((sum, group) => sum + group.cases.length, 0);
+        expect(total).toBeGreaterThanOrEqual(265);
+    });
+});
