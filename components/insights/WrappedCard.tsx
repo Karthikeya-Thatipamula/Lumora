@@ -12,9 +12,12 @@ interface WrappedCardProps {
     activeCount: number;
     topCategory: CategoryBreakdownEntry | null;
     mostExpensive: Subscription | null;
+    /** Annualised total the user stopped paying by cancelling — the shareable hook. */
+    reclaimedYearly: number;
+    currency?: string;
 }
 
-const WrappedCard = ({ yearlyTotal, activeCount, topCategory, mostExpensive }: WrappedCardProps) => {
+const WrappedCard = ({ yearlyTotal, activeCount, topCategory, mostExpensive, reclaimedYearly, currency }: WrappedCardProps) => {
     const shotRef = useRef<ViewShot>(null);
     const [isSharing, setIsSharing] = useState(false);
     const posthog = usePostHog();
@@ -27,8 +30,12 @@ const WrappedCard = ({ yearlyTotal, activeCount, topCategory, mostExpensive }: W
             const uri = await shotRef.current.capture();
             const isAvailable = await Sharing.isAvailableAsync();
             if (isAvailable) {
-                await Sharing.shareAsync(uri, { mimeType: 'image/png', dialogTitle: 'My Lumora Wrapped' });
-                posthog.capture('wrapped_shared', { year, yearly_total: yearlyTotal });
+                await Sharing.shareAsync(uri, {
+                    mimeType: 'image/png',
+                    UTI: 'public.png',
+                    dialogTitle: 'My Lumora Wrapped',
+                });
+                posthog.capture('wrapped_shared', { year, yearly_total: yearlyTotal, reclaimed_yearly: reclaimedYearly });
             } else {
                 alertDialog('Sharing unavailable', 'Sharing isn’t supported on this device.');
             }
@@ -47,7 +54,7 @@ const WrappedCard = ({ yearlyTotal, activeCount, topCategory, mostExpensive }: W
                 <View className="gap-5 rounded-3xl bg-primary p-6">
                     <Text className="text-sm font-sans-semibold uppercase tracking-[1px] text-white/60">Lumora Wrapped {year}</Text>
                     <View>
-                        <Text className="text-4xl font-sans-extrabold text-white">{formatCurrency(yearlyTotal)}</Text>
+                        <Text className="text-4xl font-sans-extrabold text-white">{formatCurrency(yearlyTotal, currency)}</Text>
                         <Text className="text-base font-sans-medium text-white/70">spent across {activeCount} active subscriptions</Text>
                     </View>
                     {topCategory && (
@@ -60,6 +67,14 @@ const WrappedCard = ({ yearlyTotal, activeCount, topCategory, mostExpensive }: W
                         <View>
                             <Text className="text-sm font-sans-semibold text-white/60">Biggest subscription</Text>
                             <Text className="text-xl font-sans-bold text-white">{mostExpensive.name}</Text>
+                        </View>
+                    )}
+                    {reclaimedYearly > 0 && (
+                        <View>
+                            <Text className="text-sm font-sans-semibold text-white/60">Reclaimed with Lumora</Text>
+                            <Text className="text-xl font-sans-bold text-success">
+                                {formatCurrency(reclaimedYearly, currency)}/year
+                            </Text>
                         </View>
                     )}
                 </View>

@@ -14,16 +14,10 @@ const isPostHogConfigured = !!(
     apiKey !== 'placeholder_key'
 )
 
-// Log configuration status for debugging
 if (!isPostHogConfigured) {
     console.warn(
         '[PostHog] Analytics disabled - Project token not configured. ' +
         'Ensure EXPO_PUBLIC_POSTHOG_PROJECT_TOKEN is set in your .env file.'
-    )
-} else {
-    console.info(
-        `[PostHog] Analytics enabled with token: ${apiKey.slice(0, 10)}... ` +
-        `(Host: ${host || 'default'})`
     )
 }
 

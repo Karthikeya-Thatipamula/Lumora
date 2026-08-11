@@ -1,9 +1,9 @@
+import { SafeAreaView } from '@/components/SafeAreaView';
 import { safeBack } from '@/lib/navigation';
 import { isPurchasesConfigured } from '@/lib/purchases';
 import { useRouter } from 'expo-router';
 import { usePostHog } from 'posthog-react-native';
 import { Pressable, Text } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import RevenueCatUI from 'react-native-purchases-ui';
 
 export default function Paywall() {

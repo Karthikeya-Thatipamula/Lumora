@@ -1,7 +1,7 @@
+import { SafeAreaView } from '@/components/SafeAreaView';
 import { safeBack } from '@/lib/navigation';
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Terms = () => {
     const router = useRouter();

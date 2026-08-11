@@ -1,4 +1,4 @@
-import { CATEGORY_COLORS } from '@/components/CreateSubscriptionModal';
+import { CATEGORY_COLORS } from '@/lib/subscriptionTypes';
 import { getAvatarColor } from '@/lib/icon-resolver';
 import { CategoryBreakdownEntry } from '@/lib/insights';
 import { formatCurrency } from '@/lib/utils';
@@ -8,13 +8,14 @@ import { Text, View } from 'react-native';
 
 interface CategoryBreakdownChartProps {
     breakdown: CategoryBreakdownEntry[];
+    currency?: string;
 }
 
 function colorFor(category: string): string {
     return (CATEGORY_COLORS as Record<string, string>)[category] ?? getAvatarColor(category);
 }
 
-const CategoryBreakdownChart = ({ breakdown }: CategoryBreakdownChartProps) => {
+const CategoryBreakdownChart = ({ breakdown, currency }: CategoryBreakdownChartProps) => {
     const themeColors = useThemeColors();
 
     if (breakdown.length === 0) {
@@ -49,7 +50,7 @@ const CategoryBreakdownChart = ({ breakdown }: CategoryBreakdownChartProps) => {
                     <View className="items-center">
                         <Text className="text-xs font-sans-semibold text-muted-foreground">Monthly</Text>
                         <Text className="text-lg font-sans-extrabold text-primary">
-                            {formatCurrency(breakdown.reduce((sum, e) => sum + e.monthlyTotal, 0))}
+                            {formatCurrency(breakdown.reduce((sum, e) => sum + e.monthlyTotal, 0), currency)}
                         </Text>
                     </View>
                 )}
@@ -63,7 +64,7 @@ const CategoryBreakdownChart = ({ breakdown }: CategoryBreakdownChartProps) => {
                             <Text className="text-sm font-sans-semibold text-primary">{entry.category}</Text>
                             <Text className="text-xs font-sans-medium text-muted-foreground">({entry.count})</Text>
                         </View>
-                        <Text className="text-sm font-sans-bold text-primary">{formatCurrency(entry.monthlyTotal)}</Text>
+                        <Text className="text-sm font-sans-bold text-primary">{formatCurrency(entry.monthlyTotal, currency)}</Text>
                     </View>
                 ))}
             </View>

@@ -1,9 +1,9 @@
 type ClerkErrorLike = {
-    errors?: Array<{
+    errors?: {
         message?: string;
         longMessage?: string;
         code?: string;
-    }>;
+    }[];
     message?: string;
 };
 

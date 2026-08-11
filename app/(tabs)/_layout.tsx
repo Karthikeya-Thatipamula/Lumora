@@ -1,8 +1,8 @@
 import { tabs } from "@/constants/data";
-import { colors, components } from '@/constants/theme';
+import { colors, components, getTabBarBottomOffset } from '@/constants/theme';
 import { useNotificationSync } from '@/lib/useNotificationSync';
 import { useAuth } from '@clerk/expo';
-import clsx from "clsx";
+import { clsx } from "clsx";
 import { Redirect, Tabs } from "expo-router";
 import { Image, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -40,7 +40,7 @@ const TabLayout = () => {
                 tabBarShowLabel: false,
                 tabBarStyle: {
                     position: 'absolute',
-                    bottom: Math.max(insets.bottom, tabBar.horizontalInset),
+                    bottom: getTabBarBottomOffset(insets.bottom),
                     height: tabBar.height,
                     marginHorizontal: tabBar.horizontalInset,
                     borderRadius: tabBar.radius,

@@ -28,6 +28,12 @@ declare global {
         frequency?: string;
         renewalDate?: string;
         color?: string;
+        isTrial?: boolean;
+        trialEndsAt?: string;
+        householdSize?: number;
+        reminderDaysBefore?: number;
+        usageCount?: number;
+        usageSince?: string;
         priceHistory?: { price: number; changedAt: string }[];
     }
 
@@ -35,6 +41,7 @@ declare global {
         expanded: boolean;
         onPress: () => void;
         onManagePress?: () => void;
+        onDeletePress?: () => void;
     }
 
     interface UpcomingSubscription {
@@ -45,9 +52,6 @@ declare global {
         currency?: string;
         daysLeft: number;
     }
-
-    interface UpcomingSubscriptionCardProps
-        extends Omit<UpcomingSubscription, "id"> {}
 
     interface ListHeadingProps {
         title: string;

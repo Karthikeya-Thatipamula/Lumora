@@ -1,17 +1,23 @@
 import '@/global.css';
 import { configurePurchases } from '@/lib/purchases';
+import { useThemePreference } from '@/lib/useThemePreference';
+import { useUserSettings } from '@/lib/useUserSettings';
 import { posthog } from '@/src/config/posthog';
 import { ClerkProvider, useAuth } from '@clerk/expo';
 import { tokenCache } from '@clerk/expo/token-cache';
-import { ConvexReactClient } from 'convex/react';
+import { ConvexReactClient, useConvexAuth } from 'convex/react';
 import { ConvexProviderWithClerk } from 'convex/react-clerk';
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack, useGlobalSearchParams, usePathname } from "expo-router";
 import { PostHogProvider } from 'posthog-react-native';
 import { useEffect, useRef } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 SplashScreen.preventAutoHideAsync();
+
+// Catches render-time crashes anywhere in the route tree and shows a retryable
+// screen instead of unmounting to a blank page.
+export { default as ErrorBoundary } from '@/components/RouteErrorBoundary';
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
 const rawConvexUrl = process.env.EXPO_PUBLIC_CONVEX_URL;
@@ -76,8 +82,54 @@ function MissingConfigScreen() {
   );
 }
 
+function ConvexAuthLoadingScreen() {
+  return (
+    <View className="flex-1 items-center justify-center gap-3 bg-background p-6">
+      <ActivityIndicator color="#ea7a53" />
+      <Text className="text-center text-sm font-sans-medium text-muted-foreground">
+        Securing your Lumora data…
+      </Text>
+    </View>
+  );
+}
+
+function ConvexAuthErrorScreen() {
+  return (
+    <ScrollView
+      style={{ flex: 1, backgroundColor: '#0b0f1a' }}
+      contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}
+    >
+      <Text style={{ color: '#f5f5f0', fontSize: 22, fontWeight: '700', marginBottom: 8 }}>
+        Data connection needs attention
+      </Text>
+      <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, marginBottom: 20 }}>
+        You&apos;re signed in, but Lumora couldn&apos;t verify that session with its data service. Check the Clerk–Convex integration, then reload the app.
+      </Text>
+      <View style={{ backgroundColor: '#131826', borderRadius: 12, padding: 16 }}>
+        <Text style={{ color: '#ea7a53', fontSize: 15, fontWeight: '600', marginBottom: 4 }}>
+          Clerk Convex integration
+        </Text>
+        <Text style={{ color: 'rgba(255,255,255,0.7)', fontSize: 13 }}>
+          Activate Convex in the Clerk dashboard&apos;s Integrations section. The Convex backend has been configured for this Clerk instance.
+        </Text>
+      </View>
+    </ScrollView>
+  );
+}
+
+/**
+ * Applies the saved theme choice. A separate component so the hook sits inside the Convex
+ * provider (it reads user settings) without re-rendering the whole layout on every change.
+ */
+function ThemeSync() {
+  const { themePreference } = useUserSettings();
+  useThemePreference(themePreference);
+  return null;
+}
+
 function RootLayoutContent() {
   const { isLoaded: authLoaded, isSignedIn, userId } = useAuth();
+  const { isLoading: convexAuthLoading, isAuthenticated: isConvexAuthenticated } = useConvexAuth();
   const pathname = usePathname();
   const params = useGlobalSearchParams();
   const previousPathname = useRef<string | undefined>(undefined);
@@ -89,7 +141,6 @@ function RootLayoutContent() {
       // Only identify if user has changed
       if (previousUserId.current !== userId) {
         posthog.identify(userId);
-        console.info(`[PostHog] User identified: ${userId}`);
         configurePurchases(userId);
         previousUserId.current = userId;
       }
@@ -97,7 +148,6 @@ function RootLayoutContent() {
       // User signed out, reset PostHog
       posthog.reset();
       previousUserId.current = undefined;
-      console.info(`[PostHog] User reset after sign out`);
     }
   }, [authLoaded, isSignedIn, userId]);
 
@@ -144,6 +194,16 @@ function RootLayoutContent() {
   // Wait for auth to load before making routing decisions
   if (!authLoaded) return null;
 
+  // Clerk can finish restoring a session before Convex has validated its JWT.
+  // Do not mount data-fetching routes until that second authentication step is done.
+  if (isSignedIn && convexAuthLoading) {
+    return <ConvexAuthLoadingScreen />;
+  }
+
+  if (isSignedIn && !isConvexAuthenticated) {
+    return <ConvexAuthErrorScreen />;
+  }
+
   // Use Stack to render the appropriate layout based on auth state
   // The Stack component itself doesn't cause re-renders like Redirect does
   return (
@@ -169,6 +229,7 @@ export default function RootLayout() {
       >
         <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
           <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+            <ThemeSync />
             <RootLayoutContent />
           </ConvexProviderWithClerk>
         </ClerkProvider>

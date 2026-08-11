@@ -11,6 +11,7 @@
 import type * as model from "../model.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as userSettings from "../userSettings.js";
+import type * as validators from "../validators.js";
 
 import type {
   ApiFromModules,
@@ -22,6 +23,7 @@ declare const fullApi: ApiFromModules<{
   model: typeof model;
   subscriptions: typeof subscriptions;
   userSettings: typeof userSettings;
+  validators: typeof validators;
 }>;
 
 /**

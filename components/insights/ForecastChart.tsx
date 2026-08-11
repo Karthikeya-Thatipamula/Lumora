@@ -6,9 +6,10 @@ import { Text, View } from 'react-native';
 
 interface ForecastChartProps {
     forecast: ForecastEntry[];
+    currency?: string;
 }
 
-const ForecastChart = ({ forecast }: ForecastChartProps) => {
+const ForecastChart = ({ forecast, currency }: ForecastChartProps) => {
     const themeColors = useThemeColors();
     const maxAmount = Math.max(...forecast.map((f) => f.amount), 1);
 
@@ -34,7 +35,7 @@ const ForecastChart = ({ forecast }: ForecastChartProps) => {
                 xAxisLabelTextStyle={{ color: themeColors.mutedForeground, fontSize: 11 }}
                 yAxisTextStyle={{ color: themeColors.mutedForeground, fontSize: 10 }}
                 yAxisLabelWidth={40}
-                formatYLabel={(v: string) => formatCurrency(Number(v)).replace('.00', '')}
+                formatYLabel={(v: string) => formatCurrency(Number(v), currency).replace('.00', '')}
                 isAnimated
             />
             <Text className="text-xs font-sans-medium text-muted-foreground">
