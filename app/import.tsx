@@ -1,3 +1,4 @@
+import { clsx } from 'clsx';
 import { SafeAreaView } from '@/components/SafeAreaView';
 import { AnimatedView } from '@/components/motion/Animated';
 import PressableScale from '@/components/motion/PressableScale';
@@ -189,14 +190,17 @@ const Import = () => {
                         )}
 
                         <PressableScale
-                            className={`auth-button ${(result.rows.length === 0 || isImporting) && 'auth-button-disabled'}`}
+                            className={clsx(
+                                'auth-button',
+                                (result.rows.length === 0 || isImporting) && 'auth-button-disabled',
+                            )}
                             onPress={handleImport}
                             disabled={result.rows.length === 0 || isImporting}
                             accessibilityRole="button"
                             accessibilityLabel={`Import ${result.rows.length} subscriptions`}
                         >
                             {isImporting ? (
-                                <ActivityIndicator color="#081126" />
+                                <ActivityIndicator color={themeColors.primary} />
                             ) : (
                                 <Text className="auth-button-text">
                                     Import {result.rows.length}

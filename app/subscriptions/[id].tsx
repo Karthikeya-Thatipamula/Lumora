@@ -1,16 +1,22 @@
+import { useThemeColors } from '@/lib/useThemeColors';
+import { daysUntil } from '@/lib/dates';
 import CreateSubscriptionModal from '@/components/CreateSubscriptionModal';
 import type { Category, Frequency, SubscriptionFormValues } from '@/lib/subscriptionTypes';
 import { SafeAreaView } from '@/components/SafeAreaView';
 import SubscriptionAvatar from '@/components/SubscriptionAvatar';
 import UsageTracker from '@/components/UsageTracker';
-import { alertDialog, confirmDialog } from '@/lib/dialogs';
+import {
+    alertDialog,
+    confirmDeleteSubscription,
+    confirmDialog,
+    RETRY_WHEN_LOADED,
+} from '@/lib/dialogs';
 import { getCancellationUrl } from '@/lib/discovery';
 import { getCostPerUse, monthlyEquivalent } from '@/lib/insights';
 import { safeBack } from '@/lib/navigation';
 import { knownPaymentMethods } from '@/lib/subscriptionFilters';
 import { useSubscription, useSubscriptions } from '@/lib/useSubscriptions';
 import { formatCurrency, formatStatusLabel, formatSubscriptionDateTime } from '@/lib/utils';
-import dayjs from 'dayjs';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
 import * as WebBrowser from 'expo-web-browser';
 import { usePostHog } from 'posthog-react-native';
@@ -20,6 +26,7 @@ import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-nati
 const SubscriptionDetails = () => {
     const { id } = useLocalSearchParams<{ id: string }>();
     const posthog = usePostHog();
+    const themeColors = useThemeColors();
     const router = useRouter();
     const [isEditVisible, setIsEditVisible] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
@@ -63,7 +70,7 @@ const SubscriptionDetails = () => {
     if (isLoading || isDeleting) {
         return (
             <SafeAreaView className="flex-1 items-center justify-center bg-background">
-                <ActivityIndicator color="#ea7a53" />
+                <ActivityIndicator color={themeColors.accent} />
             </SafeAreaView>
         );
     }
@@ -88,12 +95,7 @@ const SubscriptionDetails = () => {
     const isPaused = subscription.status === 'paused';
     const isCancelled = subscription.status === 'cancelled';
     const isTrial = Boolean(subscription.isTrial && subscription.trialEndsAt);
-    const trialDaysLeft = isTrial
-        ? Math.max(
-              0,
-              dayjs(subscription.trialEndsAt).startOf('day').diff(dayjs().startOf('day'), 'day'),
-          )
-        : 0;
+    const trialDaysLeft = isTrial ? (daysUntil(subscription.trialEndsAt) ?? 0) : 0;
 
     const handleTogglePause = async () => {
         const nextStatus = isPaused ? 'active' : 'paused';
@@ -104,7 +106,7 @@ const SubscriptionDetails = () => {
             });
         } catch (error) {
             console.error('Update subscription status failed:', error);
-            alertDialog('Update failed', 'Please try again once your account is fully loaded.');
+            alertDialog('Update failed', RETRY_WHEN_LOADED);
         }
     };
 
@@ -122,7 +124,7 @@ const SubscriptionDetails = () => {
             posthog.capture('trial_converted_to_paid', { subscription_id: subscription.id });
         } catch (error) {
             console.error('Convert trial failed:', error);
-            alertDialog('Update failed', 'Please try again once your account is fully loaded.');
+            alertDialog('Update failed', RETRY_WHEN_LOADED);
         }
     };
 
@@ -173,17 +175,12 @@ const SubscriptionDetails = () => {
             );
         } catch (error) {
             console.error('Cancel subscription failed:', error);
-            alertDialog('Cancel failed', 'Please try again once your account is fully loaded.');
+            alertDialog('Cancel failed', RETRY_WHEN_LOADED);
         }
     };
 
     const handleDelete = async () => {
-        const confirmed = await confirmDialog({
-            title: 'Delete subscription?',
-            message: `This permanently removes ${subscription.name} and its history. This can't be undone.`,
-            confirmText: 'Delete',
-            destructive: true,
-        });
+        const confirmed = await confirmDeleteSubscription(subscription.name);
         if (!confirmed) return;
 
         setIsDeleting(true);
@@ -194,7 +191,7 @@ const SubscriptionDetails = () => {
         } catch (error) {
             console.error('Delete subscription failed:', error);
             setIsDeleting(false);
-            alertDialog('Delete failed', 'Please try again once your account is fully loaded.');
+            alertDialog('Delete failed', RETRY_WHEN_LOADED);
         }
     };
 
@@ -203,7 +200,7 @@ const SubscriptionDetails = () => {
             await updateSubscription(subscription.id, values);
         } catch (error) {
             console.error('Update subscription failed:', error);
-            alertDialog('Update failed', 'Please try again once your account is fully loaded.');
+            alertDialog('Update failed', RETRY_WHEN_LOADED);
             throw error;
         }
     };
@@ -327,10 +324,7 @@ const SubscriptionDetails = () => {
                         onLogUse={() => {
                             logUsage(subscription.id, 1).catch((error) => {
                                 console.error('Log usage failed:', error);
-                                alertDialog(
-                                    'Not saved',
-                                    'Please try again once your account is fully loaded.',
-                                );
+                                alertDialog('Not saved', RETRY_WHEN_LOADED);
                             });
                             posthog.capture('usage_logged', { subscription_id: subscription.id });
                         }}

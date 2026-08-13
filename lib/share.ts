@@ -2,7 +2,6 @@ import { formatCurrency } from '@/lib/utils';
 import { Share } from 'react-native';
 
 /** Where an invite was triggered from, so the funnel is measurable in PostHog. */
-export type InviteSource = 'settings' | 'insights_savings' | 'wrapped';
 
 export const LUMORA_INVITE_URL = 'https://lumora.app';
 

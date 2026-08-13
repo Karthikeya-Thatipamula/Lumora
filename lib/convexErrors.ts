@@ -1,4 +1,4 @@
-export function getConvexErrorMessage(error: unknown): string {
+function getConvexErrorMessage(error: unknown): string {
     return error instanceof Error ? error.message : String(error);
 }
 

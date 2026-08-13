@@ -3,7 +3,7 @@ import { SubscriptionListSkeleton } from '@/components/motion/Skeleton';
 import { SafeAreaView } from '@/components/SafeAreaView';
 import SubscriptionCard from '@/components/SubscriptionCard';
 import { getTabBarContentInset } from '@/constants/theme';
-import { alertDialog, confirmDialog } from '@/lib/dialogs';
+import { alertDialog, confirmDeleteSubscription, RETRY_WHEN_LOADED } from '@/lib/dialogs';
 import {
     countsByFilter,
     filterAndSort,
@@ -72,12 +72,7 @@ const Subscriptions = () => {
     };
 
     const handleDelete = async (subscription: Subscription) => {
-        const confirmed = await confirmDialog({
-            title: 'Delete subscription?',
-            message: `This permanently removes ${subscription.name} and its history. This can't be undone.`,
-            confirmText: 'Delete',
-            destructive: true,
-        });
+        const confirmed = await confirmDeleteSubscription(subscription.name);
         if (!confirmed) return;
 
         try {
@@ -88,7 +83,7 @@ const Subscriptions = () => {
             });
         } catch (error) {
             console.error('Delete subscription failed:', error);
-            alertDialog('Delete failed', 'Please try again once your account is fully loaded.');
+            alertDialog('Delete failed', RETRY_WHEN_LOADED);
         }
     };
 

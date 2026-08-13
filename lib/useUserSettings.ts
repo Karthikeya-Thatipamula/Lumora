@@ -1,7 +1,7 @@
 import { api } from '@/convex/_generated/api';
 import { getDeviceCurrency } from '@/lib/currency';
-import { useAuth } from '@clerk/expo';
-import { useConvexAuth, useMutation, useQuery } from 'convex/react';
+import { useConvexQueryGate } from '@/lib/useConvexQueryGate';
+import { useMutation, useQuery } from 'convex/react';
 
 export type ThemePreference = 'system' | 'light' | 'dark';
 
@@ -21,10 +21,7 @@ type UserSettingsPatch = {
 const deviceCurrency = getDeviceCurrency();
 
 export function useUserSettings() {
-    const { isLoaded, isSignedIn } = useAuth();
-    const { isLoading: isConvexAuthLoading, isAuthenticated } = useConvexAuth();
-    const canQuery = isLoaded && Boolean(isSignedIn) && !isConvexAuthLoading && isAuthenticated;
-    const isAuthResolving = !isLoaded || (Boolean(isSignedIn) && isConvexAuthLoading);
+    const { canQuery, isAuthResolving } = useConvexQueryGate();
 
     const settings = useQuery(api.userSettings.get, canQuery ? {} : 'skip');
     const updateMutation = useMutation(api.userSettings.update);

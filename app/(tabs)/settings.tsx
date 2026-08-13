@@ -1,8 +1,10 @@
+import { useThemeColors } from '@/lib/useThemeColors';
+import { useDisplayName } from '@/lib/useDisplayName';
 import { SafeAreaView } from '@/components/SafeAreaView';
 import images from '@/constants/images';
 import { getTabBarContentInset } from '@/constants/theme';
 import { SUPPORTED_CURRENCIES } from '@/lib/currency';
-import { alertDialog, confirmDialog } from '@/lib/dialogs';
+import { alertDialog, confirmDialog, RETRY_WHEN_LOADED } from '@/lib/dialogs';
 import { exportSubscriptionsCsv } from '@/lib/export';
 import {
     areNotificationsSupported,
@@ -37,6 +39,7 @@ const Settings = () => {
     const { signOut } = useClerk();
     const { user } = useUser();
     const posthog = usePostHog();
+    const themeColors = useThemeColors();
     const router = useRouter();
     const insets = useSafeAreaInsets();
     const { isPro } = useProStatus();
@@ -188,10 +191,7 @@ const Settings = () => {
     const handleThemeChange = (preference: ThemePreference) => {
         updateSettings({ themePreference: preference }).catch((error) => {
             console.error('Update theme failed:', error);
-            alertDialog(
-                'Settings not saved',
-                'Please try again once your account is fully loaded.',
-            );
+            alertDialog('Settings not saved', RETRY_WHEN_LOADED);
         });
         posthog.capture('theme_changed', { theme: preference });
     };
@@ -199,10 +199,7 @@ const Settings = () => {
     const handleCurrencyChange = (code: string) => {
         updateSettings({ currency: code }).catch((error) => {
             console.error('Update currency failed:', error);
-            alertDialog(
-                'Settings not saved',
-                'Please try again once your account is fully loaded.',
-            );
+            alertDialog('Settings not saved', RETRY_WHEN_LOADED);
         });
         posthog.capture('currency_changed', { currency: code });
     };
@@ -210,10 +207,7 @@ const Settings = () => {
     const handleToggleWeeklyDigest = (enabled: boolean) => {
         updateSettings({ weeklyDigestEnabled: enabled }).catch((error) => {
             console.error('Update weekly digest setting failed:', error);
-            alertDialog(
-                'Settings not saved',
-                'Please try again once your account is fully loaded.',
-            );
+            alertDialog('Settings not saved', RETRY_WHEN_LOADED);
         });
         posthog.capture('weekly_digest_toggled', { enabled });
     };
@@ -221,10 +215,7 @@ const Settings = () => {
     const handleToggleTrialAlerts = (enabled: boolean) => {
         updateSettings({ trialAlertsEnabled: enabled }).catch((error) => {
             console.error('Update trial alert setting failed:', error);
-            alertDialog(
-                'Settings not saved',
-                'Please try again once your account is fully loaded.',
-            );
+            alertDialog('Settings not saved', RETRY_WHEN_LOADED);
         });
         posthog.capture('trial_alerts_toggled', { enabled });
     };
@@ -252,16 +243,12 @@ const Settings = () => {
         }
         updateSettings({ notificationsEnabled: enabled }).catch((error) => {
             console.error('Update notification setting failed:', error);
-            alertDialog(
-                'Settings not saved',
-                'Please try again once your account is fully loaded.',
-            );
+            alertDialog('Settings not saved', RETRY_WHEN_LOADED);
         });
         posthog.capture('notifications_toggled', { enabled });
     };
 
-    const displayName =
-        user?.firstName || user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User';
+    const displayName = useDisplayName();
     const email = user?.emailAddresses[0]?.emailAddress;
 
     return (
@@ -372,7 +359,7 @@ const Settings = () => {
                         <Switch
                             value={notificationsEnabled}
                             onValueChange={handleToggleNotifications}
-                            trackColor={{ false: '#d4d4d4', true: '#ea7a53' }}
+                            trackColor={{ false: themeColors.muted, true: themeColors.accent }}
                             accessibilityLabel="Toggle renewal reminders"
                         />
                     </View>
@@ -390,7 +377,7 @@ const Settings = () => {
                             <Switch
                                 value={trialAlertsEnabled}
                                 onValueChange={handleToggleTrialAlerts}
-                                trackColor={{ false: '#d4d4d4', true: '#ea7a53' }}
+                                trackColor={{ false: themeColors.muted, true: themeColors.accent }}
                                 accessibilityLabel="Toggle free trial alerts"
                             />
                         </View>
@@ -409,7 +396,7 @@ const Settings = () => {
                             <Switch
                                 value={weeklyDigestEnabled}
                                 onValueChange={handleToggleWeeklyDigest}
-                                trackColor={{ false: '#d4d4d4', true: '#ea7a53' }}
+                                trackColor={{ false: themeColors.muted, true: themeColors.accent }}
                                 accessibilityLabel="Toggle weekly digest"
                             />
                         </View>
@@ -438,7 +425,7 @@ const Settings = () => {
                                                     );
                                                     alertDialog(
                                                         'Settings not saved',
-                                                        'Please try again once your account is fully loaded.',
+                                                        RETRY_WHEN_LOADED,
                                                     );
                                                 },
                                             )

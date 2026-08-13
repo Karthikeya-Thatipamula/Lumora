@@ -68,9 +68,3 @@ export const getTabBarBottomOffset = (safeAreaBottom: number) =>
 
 export const getTabBarContentInset = (safeAreaBottom: number) =>
     getTabBarBottomOffset(safeAreaBottom) + components.tabBar.height + spacing[6];
-
-export const theme = {
-    colors,
-    spacing,
-    components,
-} as const;

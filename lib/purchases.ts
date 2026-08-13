@@ -19,7 +19,6 @@ const testStoreApiKey = process.env.EXPO_PUBLIC_REVENUECAT_TEST_STORE_KEY;
 const apiKey = isExpoGo ? testStoreApiKey : nativeStoreApiKey;
 
 export const isPurchasesConfigured = Boolean(apiKey);
-export const isPurchasesPreviewMode = isExpoGo && !testStoreApiKey;
 
 let hasConfigured = false;
 

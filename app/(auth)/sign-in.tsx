@@ -1,3 +1,5 @@
+import { useThemeColors } from '@/lib/useThemeColors';
+import { clsx } from 'clsx';
 import AuthTextField from '@/components/auth/AuthTextField';
 import { LumoraWordmark } from '@/components/LumoraLogo';
 import AuroraBackground from '@/components/motion/AuroraBackground';
@@ -22,6 +24,7 @@ import { AnimatedView } from '@/components/motion/Animated';
 const SignIn = () => {
     const { signIn, errors, fetchStatus } = useSignIn();
     const posthog = usePostHog();
+    const themeColors = useThemeColors();
 
     const [emailAddress, setEmailAddress] = useState('');
     const [password, setPassword] = useState('');
@@ -162,13 +165,16 @@ const SignIn = () => {
                                     />
 
                                     <Pressable
-                                        className={`auth-button ${(!code || isBusy) && 'auth-button-disabled'}`}
+                                        className={clsx(
+                                            'auth-button',
+                                            (!code || isBusy) && 'auth-button-disabled',
+                                        )}
                                         onPress={handleVerify}
                                         disabled={!code || isBusy}
                                         accessibilityRole="button"
                                     >
                                         {isBusy ? (
-                                            <ActivityIndicator color="#081126" />
+                                            <ActivityIndicator color={themeColors.primary} />
                                         ) : (
                                             <Text className="auth-button-text">Verify</Text>
                                         )}
@@ -281,14 +287,17 @@ const SignIn = () => {
                                 )}
 
                                 <Pressable
-                                    className={`auth-button ${(!formValid || isBusy) && 'auth-button-disabled'}`}
+                                    className={clsx(
+                                        'auth-button',
+                                        (!formValid || isBusy) && 'auth-button-disabled',
+                                    )}
                                     onPress={handleSubmit}
                                     disabled={!formValid || isBusy}
                                     accessibilityRole="button"
                                     accessibilityLabel="Sign in"
                                 >
                                     {isBusy ? (
-                                        <ActivityIndicator color="#081126" />
+                                        <ActivityIndicator color={themeColors.primary} />
                                     ) : (
                                         <Text className="auth-button-text">Sign In</Text>
                                     )}

@@ -1,3 +1,5 @@
+import { useDisplayName } from '@/lib/useDisplayName';
+import { daysUntil } from '@/lib/dates';
 import AnimatedNumber from '@/components/motion/AnimatedNumber';
 import PressableScale from '@/components/motion/PressableScale';
 import { SubscriptionListSkeleton } from '@/components/motion/Skeleton';
@@ -13,7 +15,12 @@ import UpcomingSubscriptionCard from '@/components/UpcomingSubscriptionCard';
 import { getTabBarContentInset } from '@/constants/theme';
 import images from '@/constants/images';
 import '@/global.css';
-import { alertDialog, confirmDialog } from '@/lib/dialogs';
+import {
+    alertDialog,
+    confirmDeleteSubscription,
+    confirmDialog,
+    RETRY_WHEN_LOADED,
+} from '@/lib/dialogs';
 import { getDiscoveryCoverage, getDiscoveryPrompts } from '@/lib/discovery';
 import {
     findDuplicateName,
@@ -104,21 +111,13 @@ export default function App() {
             posthog.capture('subscription_creation_failed', {
                 error_message: error instanceof Error ? error.message : 'Unknown error',
             });
-            alertDialog(
-                'Subscription not saved',
-                'Please try again once your account is fully loaded.',
-            );
+            alertDialog('Subscription not saved', RETRY_WHEN_LOADED);
             throw error;
         }
     };
 
     const handleDeleteSubscription = async (item: Subscription) => {
-        const confirmed = await confirmDialog({
-            title: 'Delete subscription?',
-            message: `This permanently removes ${item.name} and its history. This can't be undone.`,
-            confirmText: 'Delete',
-            destructive: true,
-        });
+        const confirmed = await confirmDeleteSubscription(item.name);
         if (!confirmed) return;
 
         try {
@@ -129,7 +128,7 @@ export default function App() {
             });
         } catch (error) {
             console.error('Delete subscription failed:', error);
-            alertDialog('Delete failed', 'Please try again once your account is fully loaded.');
+            alertDialog('Delete failed', RETRY_WHEN_LOADED);
         }
     };
 
@@ -173,9 +172,7 @@ export default function App() {
         });
     };
 
-    // Get user display name: firstName, fullName, or email
-    const displayName =
-        user?.firstName || user?.fullName || user?.emailAddresses[0]?.emailAddress || 'User';
+    const displayName = useDisplayName();
 
     return (
         <SafeAreaView className="flex-1 bg-background p-5">
@@ -260,12 +257,7 @@ export default function App() {
                                         price={personalPrice(item)}
                                         currency={item.currency}
                                         iconKey={item.iconKey}
-                                        daysLeft={Math.max(
-                                            0,
-                                            dayjs(item.renewalDate)
-                                                .startOf('day')
-                                                .diff(dayjs().startOf('day'), 'day'),
-                                        )}
+                                        daysLeft={daysUntil(item.renewalDate) ?? 0}
                                     />
                                 )}
                                 keyExtractor={(item) => item.id}

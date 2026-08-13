@@ -3,7 +3,7 @@ import { identifyForMonitoring, initMonitoring } from '@/lib/monitoring';
 import { configurePurchases } from '@/lib/purchases';
 import { useThemePreference } from '@/lib/useThemePreference';
 import { useUserSettings } from '@/lib/useUserSettings';
-import { posthog } from '@/src/config/posthog';
+import { posthog } from '@/lib/posthog';
 import { ClerkProvider, useAuth } from '@clerk/expo';
 import { tokenCache } from '@clerk/expo/token-cache';
 import { ConvexReactClient, useConvexAuth } from 'convex/react';

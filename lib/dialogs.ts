@@ -50,3 +50,26 @@ export function alertDialog(title: string, message: string): void {
     }
     Alert.alert(title, message);
 }
+
+/**
+ * Every mutation in the app can fail the same way: Convex refuses the write because the
+ * Clerk session has not finished being exchanged. This is the one thing the user can
+ * usefully do about it, and it had been written out at fifteen separate call sites.
+ */
+export const RETRY_WHEN_LOADED = 'Please try again once your account is fully loaded.';
+
+/**
+ * Confirms deleting a subscription.
+ *
+ * The same title, wording and destructive styling were duplicated across the home list,
+ * the subscriptions list and the detail screen. Deletion is irreversible, so the three
+ * entry points drifting apart on how clearly they say that is a real risk.
+ */
+export function confirmDeleteSubscription(name: string): Promise<boolean> {
+    return confirmDialog({
+        title: 'Delete subscription?',
+        message: `This permanently removes ${name} and its history. This can't be undone.`,
+        confirmText: 'Delete',
+        destructive: true,
+    });
+}

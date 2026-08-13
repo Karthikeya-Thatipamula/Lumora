@@ -172,24 +172,6 @@ export function getRenewalTimeline(
     }));
 }
 
-export interface BudgetUsage {
-    spent: number;
-    budget: number;
-    percentage: number;
-    isOverBudget: boolean;
-}
-
-export function getBudgetUsage(subscriptions: Subscription[], monthlyBudget: number): BudgetUsage {
-    const spent = getMonthlySpend(subscriptions);
-    const percentage = monthlyBudget > 0 ? (spent / monthlyBudget) * 100 : 0;
-    return {
-        spent,
-        budget: monthlyBudget,
-        percentage,
-        isOverBudget: monthlyBudget > 0 && spent > monthlyBudget,
-    };
-}
-
 export interface TrialEntry {
     subscription: Subscription;
     endsAt: string;

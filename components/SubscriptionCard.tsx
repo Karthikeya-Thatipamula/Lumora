@@ -1,6 +1,6 @@
 import { View, Text, Pressable } from 'react-native';
 import React from 'react';
-import dayjs from 'dayjs';
+import { daysUntil } from '@/lib/dates';
 import { formatCurrency, formatStatusLabel, formatSubscriptionDateTime } from '@/lib/utils';
 import { clsx } from 'clsx';
 import SubscriptionAvatar from '@/components/SubscriptionAvatar';
@@ -27,9 +27,7 @@ const SubscriptionCard = ({
     householdSize,
 }: SubscriptionCardProps) => {
     const onTrial = Boolean(isTrial && trialEndsAt && status !== 'cancelled');
-    const trialDaysLeft = onTrial
-        ? Math.max(0, dayjs(trialEndsAt).startOf('day').diff(dayjs().startOf('day'), 'day'))
-        : 0;
+    const trialDaysLeft = onTrial ? (daysUntil(trialEndsAt) ?? 0) : 0;
     const splitWays = householdSize && householdSize > 1 ? householdSize : 0;
     const isCancelled = status === 'cancelled';
 

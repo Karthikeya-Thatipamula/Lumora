@@ -91,7 +91,7 @@ async function cancel(identifier: string): Promise<void> {
     }
 }
 
-export async function cancelReminder(subscriptionId: string): Promise<void> {
+async function cancelReminder(subscriptionId: string): Promise<void> {
     await cancel(reminderIdentifier(subscriptionId));
 }
 

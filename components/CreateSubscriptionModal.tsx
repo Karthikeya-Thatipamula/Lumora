@@ -13,7 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { clsx } from 'clsx';
 import dayjs from 'dayjs';
-import { posthog } from '@/src/config/posthog';
+import { posthog } from '@/lib/posthog';
 import { availableCatalogEntries, CatalogEntry } from '@/constants/catalog';
 import { currencySymbol, DEFAULT_CURRENCY, SUPPORTED_CURRENCIES } from '@/lib/currency';
 import {
@@ -383,7 +383,10 @@ const CreateSubscriptionModal = ({
                                     <Switch
                                         value={isTrial}
                                         onValueChange={setIsTrial}
-                                        trackColor={{ false: '#d4d4d4', true: '#ea7a53' }}
+                                        trackColor={{
+                                            false: themeColors.muted,
+                                            true: themeColors.accent,
+                                        }}
                                         accessibilityLabel="Track this as a free trial"
                                     />
                                 </View>

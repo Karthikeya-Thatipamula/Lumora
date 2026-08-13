@@ -3,8 +3,8 @@ import { api } from '@/convex/_generated/api';
 import { Doc, Id } from '@/convex/_generated/dataModel';
 import { DEFAULT_CURRENCY } from '@/lib/currency';
 import { cancelAllRemindersFor } from '@/lib/notifications';
-import { useAuth } from '@clerk/expo';
-import { useConvexAuth, useMutation, useQuery } from 'convex/react';
+import { useConvexQueryGate } from '@/lib/useConvexQueryGate';
+import { useMutation, useQuery } from 'convex/react';
 import dayjs from 'dayjs';
 import { useMemo } from 'react';
 
@@ -37,22 +37,6 @@ function mapSubscription(doc: Doc<'subscriptions'>): Subscription {
         usageCount: doc.usageCount,
         usageSince: doc.usageSince,
         priceHistory: doc.priceHistory,
-    };
-}
-
-/**
- * Convex rejects every query until Clerk's JWT has been exchanged and validated,
- * so queries stay skipped through both auth stages rather than firing and failing.
- */
-function useConvexQueryGate() {
-    const { isLoaded, isSignedIn } = useAuth();
-    const { isLoading: isConvexAuthLoading, isAuthenticated } = useConvexAuth();
-
-    return {
-        canQuery: isLoaded && Boolean(isSignedIn) && !isConvexAuthLoading && isAuthenticated,
-        // Distinguishes "still establishing the session" from "signed out": only the
-        // former should keep a spinner on screen.
-        isAuthResolving: !isLoaded || (Boolean(isSignedIn) && isConvexAuthLoading),
     };
 }
 
