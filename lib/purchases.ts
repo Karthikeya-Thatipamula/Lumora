@@ -22,18 +22,85 @@ export const isPurchasesConfigured = Boolean(apiKey);
 
 let hasConfigured = false;
 
-/** Call once per app session, as soon as the signed-in Clerk user id is known. */
-export function configurePurchases(appUserID: string) {
-    if (hasConfigured || !isPurchasesConfigured || !apiKey) return;
+/**
+ * `configure` runs once per JS session; the signed-in user is set separately with
+ * `logIn`/`logOut`.
+ *
+ * This used to be a single `configure({ apiKey, appUserID })` behind a boolean latch,
+ * which meant signing out and back in as a different user in the same session left
+ * RevenueCat still identified as the *first* user — so user B saw user A's Pro
+ * entitlement. Identity has to be a separate, repeatable call.
+ */
+function ensureConfigured(): boolean {
+    if (!isPurchasesConfigured || !apiKey) return false;
+    if (hasConfigured) return true;
 
     try {
-        Purchases.configure({ apiKey, appUserID });
+        Purchases.configure({ apiKey });
         hasConfigured = true;
+        notifyReady();
+        return true;
     } catch (error) {
         console.warn(
             'Purchases configuration skipped:',
             error instanceof Error ? error.message : error,
         );
+        return false;
+    }
+}
+
+// `useProStatus` mounts in tab screens, whose effects React runs *before* the root
+// layout's. Without a signal to wait on, it would call getCustomerInfo() before
+// configure() had run, swallow the rejection, and leave a paying user on the free tier
+// for the whole session because its effect never re-ran.
+type ReadyListener = () => void;
+const readyListeners = new Set<ReadyListener>();
+
+function notifyReady() {
+    for (const listener of readyListeners) listener();
+}
+
+/** Subscribe to the moment the SDK becomes usable. Returns an unsubscribe function. */
+export function subscribeToPurchasesReady(listener: ReadyListener): () => void {
+    readyListeners.add(listener);
+    return () => {
+        readyListeners.delete(listener);
+    };
+}
+
+/** Whether the SDK has been configured and can be called. */
+export function getPurchasesReady(): boolean {
+    return hasConfigured;
+}
+
+/**
+ * Points RevenueCat at the signed-in user. Call whenever the Clerk user id changes.
+ *
+ * The Clerk id is deliberately the RevenueCat `appUserID`: it is the same join key the
+ * Convex documents, PostHog identity and Sentry user all use.
+ */
+export async function identifyPurchaseUser(appUserID: string): Promise<void> {
+    if (!ensureConfigured()) return;
+
+    try {
+        await Purchases.logIn(appUserID);
+    } catch (error) {
+        console.warn('Purchases logIn failed:', error instanceof Error ? error.message : error);
+    }
+}
+
+/**
+ * Detaches the signed-out user, so the next sign-in starts from an anonymous id rather
+ * than inheriting the previous user's entitlements.
+ */
+export async function resetPurchaseUser(): Promise<void> {
+    if (!hasConfigured) return;
+
+    try {
+        await Purchases.logOut();
+    } catch (error) {
+        // logOut throws when already anonymous, which is a no-op rather than a problem.
+        console.warn('Purchases logOut skipped:', error instanceof Error ? error.message : error);
     }
 }
 

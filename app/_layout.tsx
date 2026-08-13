@@ -1,6 +1,6 @@
 import '@/global.css';
 import { identifyForMonitoring, initMonitoring } from '@/lib/monitoring';
-import { configurePurchases } from '@/lib/purchases';
+import { identifyPurchaseUser, resetPurchaseUser } from '@/lib/purchases';
 import { useThemePreference } from '@/lib/useThemePreference';
 import { useUserSettings } from '@/lib/useUserSettings';
 import { posthog } from '@/lib/posthog';
@@ -168,20 +168,22 @@ function RootLayoutContent() {
     const previousPathname = useRef<string | undefined>(undefined);
     const previousUserId = useRef<string | undefined>(undefined);
 
-    // Identify user in PostHog when auth state changes
+    // Keeps every downstream identity — analytics, crash reports, purchases — pointed at
+    // the same Clerk user. Signing out has to reset all three: leaving RevenueCat
+    // identified as the previous user meant the next person to sign in on this device
+    // inherited their Pro entitlement.
     useEffect(() => {
         if (authLoaded && isSignedIn && userId) {
-            // Only identify if user has changed
             if (previousUserId.current !== userId) {
                 posthog.identify(userId);
                 identifyForMonitoring(userId);
-                configurePurchases(userId);
+                void identifyPurchaseUser(userId);
                 previousUserId.current = userId;
             }
         } else if (authLoaded && !isSignedIn && previousUserId.current) {
-            // User signed out, reset PostHog
             posthog.reset();
             identifyForMonitoring(undefined);
+            void resetPurchaseUser();
             previousUserId.current = undefined;
         }
     }, [authLoaded, isSignedIn, userId]);

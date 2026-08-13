@@ -1,3 +1,4 @@
+import { parseAmount } from '@/lib/money';
 import { LabelWithInfo } from '@/components/motion/InfoTooltip';
 import PressableScale from '@/components/motion/PressableScale';
 import { IncomeContext } from '@/lib/insights';
@@ -37,13 +38,11 @@ const IncomeContextCard = ({ context, monthlySpend, currency, onSave }: IncomeCo
 
     const handleSave = () => {
         const trimmed = draft.trim();
-        const value = Number(trimmed);
+        // parseAmount takes both decimal conventions — a decimal-pad keyboard emits a
+        // comma on a German, French or Brazilian device.
+        const value = parseAmount(trimmed);
 
-        if (
-            trimmed === '' ||
-            !/^\+?(\d+(\.\d+)?|\.\d+)$/.test(trimmed) ||
-            !Number.isFinite(value)
-        ) {
+        if (value === null) {
             setError('Enter a number, like 2500');
             return;
         }

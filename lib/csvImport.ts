@@ -1,3 +1,4 @@
+import { parseAmount } from '@/lib/money';
 import {
     CATEGORIES,
     type Category,
@@ -73,6 +74,20 @@ function normaliseCategory(raw: string | undefined, warnings: string[]): Categor
     return 'Other';
 }
 
+const IMPORTABLE_STATUSES = ['active', 'paused', 'cancelled'] as const;
+
+function normaliseStatus(raw: string | undefined): SubscriptionFormValues['status'] {
+    const value = (raw ?? '').trim().toLowerCase();
+    return IMPORTABLE_STATUSES.find((status) => status === value);
+}
+
+/** Whole people, at least one — the divisor for a split plan must never be zero. */
+function normaliseHouseholdSize(raw: string | undefined): number | undefined {
+    if (!raw?.trim()) return undefined;
+    const size = Math.floor(Number(raw.trim()));
+    return Number.isFinite(size) && size >= 1 ? size : undefined;
+}
+
 function normaliseFrequency(raw: string | undefined): Frequency {
     const value = (raw ?? '').trim().toLowerCase();
     // Anything annual-ish counts as yearly; everything else bills monthly.
@@ -117,6 +132,17 @@ export function parseSubscriptionsCsv(text: string): ImportResult {
         'period',
     );
     const paymentIndex = columnIndex(headers, 'paymentmethod', 'payment', 'card', 'paidwith');
+    // Lumora's own export writes these. Ignoring them meant re-importing your own file
+    // resurrected every cancelled subscription as active and re-billed shared plans at
+    // full price — spend jumped, with no indication why.
+    const statusIndex = columnIndex(headers, 'status', 'state');
+    const householdIndex = columnIndex(
+        headers,
+        'householdsize',
+        'household',
+        'shared',
+        'splitways',
+    );
 
     const rows: ImportRow[] = [];
     const errors: { line: number; reason: string }[] = [];
@@ -132,10 +158,11 @@ export function parseSubscriptionsCsv(text: string): ImportResult {
             return;
         }
 
-        // Strip currency symbols and thousands separators before parsing.
-        const rawPrice = (cells[priceIndex] ?? '').replace(/[^0-9.\-]/g, '');
-        const price = Number(rawPrice);
-        if (!rawPrice || !Number.isFinite(price) || price <= 0) {
+        // Handles both decimal conventions. Stripping everything but digits and dots used
+        // to turn a European "1.234,56" into "1.23456", which parsed as 1.23 — under a
+        // thousandth of the real price, and it passed the greater-than-zero check.
+        const price = parseAmount(cells[priceIndex]);
+        if (price === null || price <= 0) {
             errors.push({ line: lineNumber, reason: `"${name}" has no usable price` });
             return;
         }
@@ -157,6 +184,11 @@ export function parseSubscriptionsCsv(text: string): ImportResult {
                 currency: isSupportedCurrency(currency) ? currency : undefined,
                 paymentMethod:
                     paymentIndex === -1 ? undefined : cells[paymentIndex]?.trim() || undefined,
+                status: statusIndex === -1 ? undefined : normaliseStatus(cells[statusIndex]),
+                householdSize:
+                    householdIndex === -1
+                        ? undefined
+                        : normaliseHouseholdSize(cells[householdIndex]),
             },
             warnings,
         });

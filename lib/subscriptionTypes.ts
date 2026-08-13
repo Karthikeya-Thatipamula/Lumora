@@ -50,4 +50,9 @@ export interface SubscriptionFormValues {
     trialDays?: number;
     /** People splitting the cost, including the user. 1 means not shared. */
     householdSize?: number;
+    /**
+     * Only set by CSV import, which has to be able to bring a cancelled or paused
+     * subscription back as it was. Everything created in the app starts active.
+     */
+    status?: 'active' | 'paused' | 'cancelled';
 }

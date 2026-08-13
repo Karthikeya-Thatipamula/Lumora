@@ -1,3 +1,4 @@
+import { parseAmount } from '@/lib/money';
 import {
     View,
     Text,
@@ -102,14 +103,15 @@ const CreateSubscriptionModal = ({
     }, [visible, initialValues, defaultCurrency, prefillName]);
 
     const trimmedPrice = price.trim();
-    const priceNumber = Number(trimmedPrice);
-    const priceLooksNumeric = /^\s*\+?(\d+(\.\d+)?|\.\d+)\s*$/.test(trimmedPrice);
+    // parseAmount accepts both decimal conventions; a decimal-pad keyboard emits a comma
+    // on a German, French or Brazilian device.
+    const priceNumber = parseAmount(trimmedPrice);
 
     // Distinguishes the failure modes so the user is told what's actually wrong.
     const priceError =
         trimmedPrice === ''
             ? null
-            : !priceLooksNumeric || !Number.isFinite(priceNumber)
+            : priceNumber === null
               ? 'Enter a number, like 9.99'
               : priceNumber <= 0
                 ? 'Price must be greater than zero'
@@ -124,7 +126,7 @@ const CreateSubscriptionModal = ({
         if (!isValidForm || isSubmitting) return;
 
         const trimmedName = name.trim().slice(0, MAX_NAME_LENGTH);
-        const priceValue = Number(price.trim());
+        const priceValue = parseAmount(price.trim()) ?? 0;
 
         setIsSubmitting(true);
         try {
@@ -179,6 +181,10 @@ const CreateSubscriptionModal = ({
     const applyQuickAdd = (entry: CatalogEntry) => {
         setName(entry.name);
         setPrice(entry.typicalMonthlyUsd.toFixed(2));
+        // The catalog prices are USD. Setting the amount without the currency meant an
+        // Indian user tapping "Netflix" got ₹15.49 instead of roughly ₹649 — wrong by
+        // about fifty times, and it flowed into every insight.
+        setCurrency('USD');
         setFrequency('Monthly');
         setCategory(entry.category);
         if (entry.commonTrialDays) {
@@ -458,7 +464,7 @@ const CreateSubscriptionModal = ({
                                         </Pressable>
                                     ))}
                                 </View>
-                                {householdSize > 1 && isValidPrice && (
+                                {householdSize > 1 && priceNumber !== null && isValidPrice && (
                                     <Text className="mt-1 text-xs font-sans-semibold text-accent">
                                         Your share: {currencySymbol(currency)}
                                         {(priceNumber / householdSize).toFixed(2)} per{' '}

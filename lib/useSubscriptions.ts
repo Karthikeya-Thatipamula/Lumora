@@ -94,7 +94,9 @@ export function useSubscriptions() {
             currency: values.currency ?? DEFAULT_CURRENCY,
             billing: values.frequency,
             category: values.category,
-            status: 'active',
+            // Only CSV import sets this, so a cancelled or paused subscription can be
+            // restored as it was rather than coming back active and inflating spend.
+            status: values.status ?? 'active',
             startDate: now.toISOString(),
             renewalDate: (trialEnd ?? nextRenewalDate(values.frequency, now)).toISOString(),
             color: CATEGORY_COLORS[values.category],

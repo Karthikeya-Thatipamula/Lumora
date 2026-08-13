@@ -12,6 +12,9 @@ const COLUMNS = [
     'Start date',
     'Renewal date',
     'Payment method',
+    // Without this column a shared plan re-imports at its full sticker price rather than
+    // the user's share, silently inflating every total.
+    'Household size',
 ] as const;
 
 /**
@@ -43,6 +46,7 @@ export function buildSubscriptionsCsv(subscriptions: Subscription[]): string {
         formatDate(sub.startDate),
         formatDate(sub.renewalDate),
         sub.paymentMethod ?? '',
+        String(sub.householdSize ?? 1),
     ]);
 
     return [COLUMNS, ...rows].map((row) => row.map(escapeCsv).join(',')).join('\r\n');

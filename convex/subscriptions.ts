@@ -5,8 +5,11 @@ import {
     assertValidDate,
     assertValidName,
     assertValidPrice,
+    assertValidReminderDays,
     assertValidStatus,
     MAX_SUBSCRIPTIONS_PER_USER,
+    normalizeBilling,
+    normalizeCurrency,
     normalizeHouseholdSize,
     normalizeText,
     trimPriceHistory,
@@ -62,9 +65,12 @@ export const create = mutation({
         const name = assertValidName(args.name);
         assertValidPrice(args.price);
         assertValidStatus(args.status);
+        assertValidReminderDays(args.reminderDaysBefore);
         assertValidDate(args.startDate, 'Start date');
         assertValidDate(args.renewalDate, 'Renewal date');
         assertValidDate(args.trialEndsAt, 'Trial end date');
+        const billing = normalizeBilling(args.billing);
+        const currency = normalizeCurrency(args.currency);
 
         // Bounded so a looping client can't fill the table for this user. We only need to
         // know whether the cap is reached, so probe one past it rather than reading every
@@ -81,6 +87,10 @@ export const create = mutation({
         return await ctx.db.insert('subscriptions', {
             ...args,
             name: name!,
+            // Spreading `args` would otherwise write the raw client values straight
+            // through, which is how billing and currency escaped validation.
+            billing: billing!,
+            currency,
             plan: normalizeText(args.plan),
             category: normalizeText(args.category),
             paymentMethod: normalizeText(args.paymentMethod),
@@ -122,12 +132,23 @@ export const update = mutation({
         const name = assertValidName(patch.name);
         assertValidPrice(patch.price);
         assertValidStatus(patch.status);
+        assertValidReminderDays(patch.reminderDaysBefore);
         assertValidDate(patch.startDate, 'Start date');
         assertValidDate(patch.renewalDate, 'Renewal date');
         assertValidDate(patch.trialEndsAt, 'Trial end date');
+        const billing = normalizeBilling(patch.billing);
+        const currency = normalizeCurrency(patch.currency);
 
+        // Documents predating the priceHistory field get one seeded from their current
+        // price. The seed must be dated from when the subscription started, not from now:
+        // re-seeding with `new Date()` on every edit slid the "original price" timestamp
+        // forward each time the user saved, corrupting the spend-over-time chart.
         let priceHistory = existing.priceHistory ?? [
-            { price: existing.price, changedAt: new Date().toISOString() },
+            {
+                price: existing.price,
+                // startDate is optional, so fall back to when the document was created.
+                changedAt: existing.startDate ?? new Date(existing._creationTime).toISOString(),
+            },
         ];
         if (patch.price !== undefined && patch.price !== existing.price) {
             priceHistory = trimPriceHistory([
@@ -143,6 +164,8 @@ export const update = mutation({
         await ctx.db.patch('subscriptions', id, {
             ...patch,
             ...(name !== undefined ? { name } : {}),
+            ...(billing !== undefined ? { billing } : {}),
+            ...(currency !== undefined ? { currency } : {}),
             ...(patch.plan !== undefined ? { plan: normalizeText(patch.plan) } : {}),
             ...(patch.category !== undefined ? { category: normalizeText(patch.category) } : {}),
             ...(patch.paymentMethod !== undefined

@@ -1,3 +1,4 @@
+import { parseAmount } from '@/lib/money';
 import { LabelWithInfo } from '@/components/motion/InfoTooltip';
 import { formatCurrency } from '@/lib/utils';
 import { useThemeColors } from '@/lib/useThemeColors';
@@ -22,14 +23,12 @@ const BudgetCard = ({ monthlyBudget, monthlySpend, currency, onSave }: BudgetCar
 
     const handleSave = () => {
         const trimmed = draft.trim();
-        const value = Number(trimmed);
+        // parseAmount takes both decimal conventions — a decimal-pad keyboard emits a
+        // comma on a German, French or Brazilian device.
+        const value = parseAmount(trimmed);
 
         // Previously an invalid entry silently did nothing, so tapping Save looked broken.
-        if (
-            trimmed === '' ||
-            !/^\+?(\d+(\.\d+)?|\.\d+)$/.test(trimmed) ||
-            !Number.isFinite(value)
-        ) {
+        if (value === null) {
             setError('Enter a number, like 150');
             return;
         }
