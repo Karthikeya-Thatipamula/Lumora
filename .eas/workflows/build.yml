@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      profile:
+        type: choice
+        options: [preview, production]
+        required: true
+
+jobs:
+  # Same gates as .github/workflows/ci.yml. Duplicated deliberately: a build triggered
+  # from the EAS dashboard never passes through GitHub Actions, and an unverified
+  # production build is exactly the one you do not want to ship.
+  verify:
+    name: Lint, typecheck and test
+    steps:
+      - uses: eas/checkout
+      - uses: eas/install_node_modules
+      - name: Check formatting
+        run: npm run format:check
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        run: npm run typecheck
+      - name: className interop guard
+        run: npm run check:interop
+      - name: Test
+        run: npm run test:ci
+
+  build_android:
+    name: Android
+    needs: [verify]
+    type: build
+    params:
+      platform: android
+      profile: ${{ inputs.profile || 'preview' }}
+
+  build_ios:
+    name: iOS
+    needs: [verify]
+    type: build
+    params:
+      platform: ios
+      profile: ${{ inputs.profile || 'preview' }}

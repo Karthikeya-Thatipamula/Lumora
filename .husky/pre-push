@@ -1,0 +1,4 @@
+# lint-staged only sees staged files, so it cannot catch a type error introduced in one
+# file by an edit in another, and it never runs the tests. Those are whole-project checks,
+# too slow for every commit but worth the wait before code leaves the machine.
+npm run typecheck && npm run check:interop && npm run test

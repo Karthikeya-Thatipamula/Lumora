@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# A new push to a PR makes the in-flight run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, typecheck and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # `npm ci` rather than `npm install`: it fails when package-lock.json and
+      # package.json disagree, which is the whole point of having a lockfile.
+      - name: Install dependencies
+        run: npm ci
+
+      # Run as separate steps rather than `npm run verify` so a failure names itself in
+      # the job summary instead of hiding behind one red "verify".
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      # NativeWind silently drops className on components it has not registered. The
+      # ESLint rule catches this in-editor; this is the backstop.
+      - name: className interop guard
+        run: npm run check:interop
+
+      - name: Test
+        run: npm run test:ci
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: coverage/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  expo-doctor:
+    name: Expo doctor
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      # Catches SDK version drift between package.json and the installed tree — the class
+      # of problem that only shows up at build time otherwise.
+      - name: Check dependency versions against the SDK
+        run: npx expo-doctor

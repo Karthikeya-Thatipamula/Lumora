@@ -1,0 +1,23 @@
+name: End-to-end
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    # Nightly, off the hour. Maestro needs a real build, so this is too slow to gate a PR.
+    - cron: '17 3 * * *'
+
+jobs:
+  build_for_e2e:
+    name: Build a testable Android app
+    type: build
+    params:
+      platform: android
+      profile: preview
+
+  maestro:
+    name: Run the .maestro flows
+    needs: [build_for_e2e]
+    type: maestro
+    params:
+      build_id: ${{ needs.build_for_e2e.outputs.build_id }}
+      flow_path: ['.maestro']
