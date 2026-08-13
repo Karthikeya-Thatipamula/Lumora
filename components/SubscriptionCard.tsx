@@ -1,9 +1,22 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import { View, Text, Pressable } from 'react-native';
 import React from 'react';
 import { daysUntil } from '@/lib/dates';
 import { formatCurrency, formatStatusLabel, formatSubscriptionDateTime } from '@/lib/utils';
 import { clsx } from 'clsx';
 import SubscriptionAvatar from '@/components/SubscriptionAvatar';
+
+/**
+ * Spreads the subscription's own fields rather than taking a single `subscription` prop,
+ * which is how the callers already use it. A single-object prop would be a nicer shape
+ * and better for the React Compiler, but that is a separate change.
+ */
+interface SubscriptionCardProps extends Omit<Subscription, 'id'> {
+    expanded: boolean;
+    onPress: () => void;
+    onManagePress?: () => void;
+    onDeletePress?: () => void;
+}
 
 const SubscriptionCard = ({
     name,

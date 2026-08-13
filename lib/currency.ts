@@ -1,3 +1,4 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import * as Localization from 'expo-localization';
 
 export interface CurrencyOption {

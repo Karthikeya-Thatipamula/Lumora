@@ -1,5 +1,17 @@
 import type { ImageSourcePropType } from 'react-native';
 
+/**
+ * Ambient globals for the tab-bar shapes only.
+ *
+ * `Subscription` used to live here too, hand-written and globally visible. It duplicated
+ * `convex/schema.ts` and had already drifted from it — a `frequency` field the database
+ * never had, and an optional `status` where Convex required one. It now derives from
+ * `Doc<'subscriptions'>` in `lib/subscriptionTypes.ts` and is imported like any other
+ * type, which is also the convention every component prop already follows.
+ *
+ * What remains is genuinely ambient: the static tab configuration in `constants/data.ts`
+ * and the icon shape the tab bar renders it with.
+ */
 declare global {
     interface AppTab {
         name: string;
@@ -10,52 +22,6 @@ declare global {
     interface TabIconProps {
         focused: boolean;
         icon: ImageSourcePropType;
-    }
-
-    interface Subscription {
-        id: string;
-        iconKey?: string;
-        name: string;
-        plan?: string;
-        category?: string;
-        paymentMethod?: string;
-        status?: string;
-        statusChangedAt?: string;
-        startDate?: string;
-        price: number;
-        currency?: string;
-        billing: string;
-        frequency?: string;
-        renewalDate?: string;
-        color?: string;
-        isTrial?: boolean;
-        trialEndsAt?: string;
-        householdSize?: number;
-        reminderDaysBefore?: number;
-        usageCount?: number;
-        usageSince?: string;
-        priceHistory?: { price: number; changedAt: string }[];
-    }
-
-    interface SubscriptionCardProps extends Omit<Subscription, 'id'> {
-        expanded: boolean;
-        onPress: () => void;
-        onManagePress?: () => void;
-        onDeletePress?: () => void;
-    }
-
-    interface UpcomingSubscription {
-        id: string;
-        iconKey?: string;
-        name: string;
-        price: number;
-        currency?: string;
-        daysLeft: number;
-    }
-
-    interface ListHeadingProps {
-        title: string;
-        onActionPress?: () => void;
     }
 }
 

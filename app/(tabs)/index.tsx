@@ -5,7 +5,7 @@ import PressableScale from '@/components/motion/PressableScale';
 import { SubscriptionListSkeleton } from '@/components/motion/Skeleton';
 import { SafeAreaView } from '@/components/SafeAreaView';
 import CreateSubscriptionModal from '@/components/CreateSubscriptionModal';
-import type { SubscriptionFormValues } from '@/lib/subscriptionTypes';
+import type { Subscription, SubscriptionFormValues } from '@/lib/subscriptionTypes';
 import DiscoveryAuditCard from '@/components/DiscoveryAuditCard';
 import ListHeading from '@/components/ListHeading';
 import RenewalTimeline from '@/components/RenewalTimeline';
@@ -257,7 +257,6 @@ export default function App() {
                                 data={upcomingSubscriptions}
                                 renderItem={({ item }) => (
                                     <UpcomingSubscriptionCard
-                                        id={item.id}
                                         name={item.name}
                                         price={personalPrice(item)}
                                         currency={item.currency}

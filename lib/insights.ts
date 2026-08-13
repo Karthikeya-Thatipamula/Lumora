@@ -1,3 +1,4 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import dayjs from 'dayjs';
 
 const MONTHLY_BILLING_VALUES = new Set(['monthly', 'month']);

@@ -1,3 +1,4 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import PressableScale from '@/components/motion/PressableScale';
 import { SubscriptionListSkeleton } from '@/components/motion/Skeleton';
 import { SafeAreaView } from '@/components/SafeAreaView';

@@ -13,7 +13,18 @@
 const prettier = 'node node_modules/prettier/bin/prettier.cjs';
 const eslint = 'node node_modules/eslint/bin/eslint.js';
 
+/**
+ * `--no-warn-ignored` matters here. lint-staged hands ESLint every staged file by path,
+ * including ones the config ignores (convex/_generated/**). ESLint then emits "File
+ * ignored because of a matching ignore pattern" as a *warning*, and `--max-warnings 0`
+ * turns that into a failed commit for a file nobody was asked to lint.
+ *
+ * Prettier has the same behaviour, hence `--ignore-unknown`.
+ */
 module.exports = {
-    '*.{ts,tsx,js,jsx,mjs}': [`${prettier} --write`, `${eslint} --max-warnings 0 --fix`],
-    '*.{json,md,yml,yaml,css}': [`${prettier} --write`],
+    '*.{ts,tsx,js,jsx,mjs}': [
+        `${prettier} --write --ignore-unknown`,
+        `${eslint} --max-warnings 0 --no-warn-ignored --fix`,
+    ],
+    '*.{json,md,yml,yaml,css}': [`${prettier} --write --ignore-unknown`],
 };

@@ -1,3 +1,4 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import { buildSubscriptionsCsv, exportFileName } from '@/lib/csv';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';

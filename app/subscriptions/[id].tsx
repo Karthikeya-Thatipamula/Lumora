@@ -1,7 +1,7 @@
 import { useThemeColors } from '@/lib/useThemeColors';
 import { daysUntil } from '@/lib/dates';
 import CreateSubscriptionModal from '@/components/CreateSubscriptionModal';
-import type { Category, Frequency, SubscriptionFormValues } from '@/lib/subscriptionTypes';
+import { toCategory, toFrequency, type SubscriptionFormValues } from '@/lib/subscriptionTypes';
 import { SafeAreaView } from '@/components/SafeAreaView';
 import SubscriptionAvatar from '@/components/SubscriptionAvatar';
 import UsageTracker from '@/components/UsageTracker';
@@ -50,8 +50,8 @@ const SubscriptionDetails = () => {
                 ? {
                       name: subscription.name,
                       price: subscription.price,
-                      frequency: (subscription.billing as Frequency) ?? 'Monthly',
-                      category: (subscription.category as Category) ?? 'Other',
+                      frequency: toFrequency(subscription.billing),
+                      category: toCategory(subscription.category),
                       currency: subscription.currency,
                       paymentMethod: subscription.paymentMethod,
                       isTrial: Boolean(subscription.isTrial),
@@ -120,7 +120,7 @@ const SubscriptionDetails = () => {
         if (!confirmed) return;
 
         try {
-            await endTrial(subscription.id, (subscription.billing as Frequency) ?? 'Monthly');
+            await endTrial(subscription.id, toFrequency(subscription.billing));
             posthog.capture('trial_converted_to_paid', { subscription_id: subscription.id });
         } catch (error) {
             console.error('Convert trial failed:', error);

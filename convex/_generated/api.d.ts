@@ -8,6 +8,8 @@
  * @module
  */
 
+import type * as domain from "../domain.js";
+import type * as migrations from "../migrations.js";
 import type * as model from "../model.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as userSettings from "../userSettings.js";
@@ -20,6 +22,8 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  domain: typeof domain;
+  migrations: typeof migrations;
   model: typeof model;
   subscriptions: typeof subscriptions;
   userSettings: typeof userSettings;

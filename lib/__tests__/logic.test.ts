@@ -16,6 +16,7 @@
  * bottom of the file. That preserves the original top-to-bottom evaluation order and lets
  * fixtures declared in one section stay visible to later ones.
  */
+import type { Subscription } from '@/lib/subscriptionTypes';
 import dayjs from 'dayjs';
 import { easeOutCubic, interpolateValue, shouldAnimateChange } from '@/lib/animation';
 import { buildSubscriptionsCsv, escapeCsv } from '@/lib/csv';

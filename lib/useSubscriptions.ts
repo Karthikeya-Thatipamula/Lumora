@@ -1,4 +1,10 @@
-import { CATEGORY_COLORS, SubscriptionFormValues } from '@/lib/subscriptionTypes';
+import {
+    CATEGORY_COLORS,
+    type Frequency,
+    type Subscription,
+    type SubscriptionFormValues,
+    type SubscriptionStatus,
+} from '@/lib/subscriptionTypes';
 import { api } from '@/convex/_generated/api';
 import { Doc, Id } from '@/convex/_generated/dataModel';
 import { DEFAULT_CURRENCY } from '@/lib/currency';
@@ -10,34 +16,38 @@ import { useMemo } from 'react';
 
 export const DEFAULT_TRIAL_DAYS = 7;
 
-function nextRenewalDate(frequency: SubscriptionFormValues['frequency'], from = dayjs()) {
-    return frequency === 'Monthly' ? from.add(1, 'month') : from.add(1, 'year');
+/**
+ * An exhaustive switch with no `default`, deliberately.
+ *
+ * This was `frequency === 'Monthly' ? +1 month : +1 year`, so every value that was not
+ * exactly the string "Monthly" — including "monthly" — silently billed annually. Now that
+ * `Frequency` is a literal union, adding a cycle here fails to compile rather than
+ * quietly picking a wrong answer.
+ */
+function nextRenewalDate(frequency: Frequency, from = dayjs()) {
+    switch (frequency) {
+        case 'Monthly':
+            return from.add(1, 'month');
+        case 'Yearly':
+            return from.add(1, 'year');
+    }
 }
 
-function mapSubscription(doc: Doc<'subscriptions'>): Subscription {
-    return {
-        id: doc._id,
-        name: doc.name,
-        plan: doc.plan,
-        category: doc.category,
-        paymentMethod: doc.paymentMethod,
-        status: doc.status,
-        statusChangedAt: doc.statusChangedAt,
-        startDate: doc.startDate,
-        price: doc.price,
-        currency: doc.currency,
-        billing: doc.billing,
-        renewalDate: doc.renewalDate,
-        color: doc.color,
-        iconKey: doc.iconKey,
-        isTrial: doc.isTrial,
-        trialEndsAt: doc.trialEndsAt,
-        householdSize: doc.householdSize,
-        reminderDaysBefore: doc.reminderDaysBefore,
-        usageCount: doc.usageCount,
-        usageSince: doc.usageSince,
-        priceHistory: doc.priceHistory,
-    };
+/**
+ * Swaps Convex's bookkeeping fields for a plain `id`.
+ *
+ * This used to copy all twenty-two fields by hand, which made it a drift vector in its
+ * own right: a new schema field silently failed to reach the client until someone
+ * remembered to add a line here. Now that `Subscription` is derived from
+ * `Doc<'subscriptions'>`, the rest passes through and the compiler enforces the shape.
+ */
+function mapSubscription({
+    _id,
+    _creationTime,
+    userId,
+    ...rest
+}: Doc<'subscriptions'>): Subscription {
+    return { id: _id, ...rest };
 }
 
 export function useSubscription(id: string | undefined) {
@@ -166,7 +176,7 @@ export function useSubscriptions() {
         return await resetUsageMutation({ id: id as Id<'subscriptions'> });
     };
 
-    const setSubscriptionStatus = async (id: string, status: 'active' | 'paused' | 'cancelled') => {
+    const setSubscriptionStatus = async (id: string, status: SubscriptionStatus) => {
         assertAuthenticated();
         // Paused and cancelled subscriptions must stop nagging immediately.
         if (status !== 'active') await cancelAllRemindersFor(id);

@@ -1,3 +1,4 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import { DISCOVERY_GROUPS, DiscoveryGroup, SUBSCRIPTION_CATALOG } from '@/constants/catalog';
 
 export interface DiscoveryCoverage {

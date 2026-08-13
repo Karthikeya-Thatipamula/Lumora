@@ -1,14 +1,13 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
+import { frequencyValidator, statusValidator } from './domain';
 import { requireUserId } from './model';
 import {
     assertValidDate,
     assertValidName,
     assertValidPrice,
     assertValidReminderDays,
-    assertValidStatus,
     MAX_SUBSCRIPTIONS_PER_USER,
-    normalizeBilling,
     normalizeCurrency,
     normalizeHouseholdSize,
     normalizeText,
@@ -46,11 +45,11 @@ export const create = mutation({
         plan: v.optional(v.string()),
         category: v.optional(v.string()),
         paymentMethod: v.optional(v.string()),
-        status: v.string(),
+        status: statusValidator,
         startDate: v.optional(v.string()),
         price: v.number(),
         currency: v.optional(v.string()),
-        billing: v.string(),
+        billing: frequencyValidator,
         renewalDate: v.optional(v.string()),
         color: v.optional(v.string()),
         iconKey: v.optional(v.string()),
@@ -64,12 +63,10 @@ export const create = mutation({
 
         const name = assertValidName(args.name);
         assertValidPrice(args.price);
-        assertValidStatus(args.status);
         assertValidReminderDays(args.reminderDaysBefore);
         assertValidDate(args.startDate, 'Start date');
         assertValidDate(args.renewalDate, 'Renewal date');
         assertValidDate(args.trialEndsAt, 'Trial end date');
-        const billing = normalizeBilling(args.billing);
         const currency = normalizeCurrency(args.currency);
 
         // Bounded so a looping client can't fill the table for this user. We only need to
@@ -87,9 +84,9 @@ export const create = mutation({
         return await ctx.db.insert('subscriptions', {
             ...args,
             name: name!,
-            // Spreading `args` would otherwise write the raw client values straight
-            // through, which is how billing and currency escaped validation.
-            billing: billing!,
+            // Spreading `args` would otherwise write the raw currency straight through,
+            // which is how it escaped validation. `billing` and `status` are now literal
+            // unions in the arg validator, so a bad value cannot reach this point at all.
             currency,
             plan: normalizeText(args.plan),
             category: normalizeText(args.category),
@@ -109,11 +106,11 @@ export const update = mutation({
         plan: v.optional(v.string()),
         category: v.optional(v.string()),
         paymentMethod: v.optional(v.string()),
-        status: v.optional(v.string()),
+        status: v.optional(statusValidator),
         startDate: v.optional(v.string()),
         price: v.optional(v.number()),
         currency: v.optional(v.string()),
-        billing: v.optional(v.string()),
+        billing: v.optional(frequencyValidator),
         renewalDate: v.optional(v.string()),
         color: v.optional(v.string()),
         iconKey: v.optional(v.string()),
@@ -131,12 +128,10 @@ export const update = mutation({
 
         const name = assertValidName(patch.name);
         assertValidPrice(patch.price);
-        assertValidStatus(patch.status);
         assertValidReminderDays(patch.reminderDaysBefore);
         assertValidDate(patch.startDate, 'Start date');
         assertValidDate(patch.renewalDate, 'Renewal date');
         assertValidDate(patch.trialEndsAt, 'Trial end date');
-        const billing = normalizeBilling(patch.billing);
         const currency = normalizeCurrency(patch.currency);
 
         // Documents predating the priceHistory field get one seeded from their current
@@ -164,7 +159,6 @@ export const update = mutation({
         await ctx.db.patch('subscriptions', id, {
             ...patch,
             ...(name !== undefined ? { name } : {}),
-            ...(billing !== undefined ? { billing } : {}),
             ...(currency !== undefined ? { currency } : {}),
             ...(patch.plan !== undefined ? { plan: normalizeText(patch.plan) } : {}),
             ...(patch.category !== undefined ? { category: normalizeText(patch.category) } : {}),
@@ -254,7 +248,7 @@ export const resetUsage = mutation({
 export const setStatus = mutation({
     args: {
         id: v.id('subscriptions'),
-        status: v.string(),
+        status: statusValidator,
     },
     handler: async (ctx, { id, status }) => {
         const userId = await requireUserId(ctx);
@@ -262,8 +256,6 @@ export const setStatus = mutation({
         if (!existing || existing.userId !== userId) {
             throw new Error('Subscription not found');
         }
-        assertValidStatus(status);
-
         await ctx.db.patch('subscriptions', id, {
             status,
             statusChangedAt: new Date().toISOString(),

@@ -3,13 +3,22 @@ import React from 'react';
 import { formatCurrency } from '@/lib/utils';
 import SubscriptionAvatar from '@/components/SubscriptionAvatar';
 
+interface UpcomingSubscriptionCardProps {
+    name: string;
+    price: number;
+    /** Whole calendar days until the next charge, never negative. */
+    daysLeft: number;
+    iconKey?: string;
+    currency?: string;
+}
+
 const UpcomingSubscriptionCard = ({
     name,
     price,
     daysLeft,
     iconKey,
     currency,
-}: UpcomingSubscription) => {
+}: UpcomingSubscriptionCardProps) => {
     return (
         <View className="upcoming-card">
             <View className="upcoming-row">

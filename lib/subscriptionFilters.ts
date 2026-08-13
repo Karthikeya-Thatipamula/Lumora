@@ -1,3 +1,4 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import { isTrialing, monthlyEquivalent } from '@/lib/insights';
 import dayjs from 'dayjs';
 

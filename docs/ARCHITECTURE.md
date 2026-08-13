@@ -92,6 +92,34 @@ stale build, a retried mutation or a hand-crafted call can all put bad values in
 Anything the client checks for UX reasons must also be checked here, or it is not
 enforced. That is a live gap for the free-tier subscription limit.
 
+### Argument validators are safe to tighten; schema validators are not
+
+Argument validators run at call time — tightening one can only reject a bad _new_ call.
+Schema validators run against **every existing document** when you deploy, and a single
+non-conforming row rejects the whole push.
+
+So enum fields are tightened in two separate deploys:
+
+1. Tighten the arg validator (`status` and `billing` are `v.union(v.literal(...))` today).
+2. Run `convex/migrations.ts` against production and confirm it reports zero
+   non-conforming rows.
+3. Only then tighten `convex/schema.ts`, **deployed on its own**.
+
+Step 3 has not been done — `schema.ts` still stores `status` and `billing` as
+`v.string()`. Nothing is broken by that; it just means the database is one step behind
+the arg validators. Run the migration first.
+
+### The domain vocabulary
+
+`convex/domain.ts` declares the validator and derives the type with `Infer<>`, never the
+reverse. `v.union(...ARRAY.map(v.literal))` looks equivalent and is not — the spread loses
+literal inference, TypeScript widens to `VUnion<string>`, and you are back to the drift
+you were trying to remove.
+
+`Subscription` in `lib/subscriptionTypes.ts` is `Omit<Doc<'subscriptions'>, '_id' |
+'_creationTime' | 'userId'> & { id: string }`. Add a schema field and every consumer gains
+it; remove one and every consumer fails to compile.
+
 ## Theming: two parallel sources, on purpose
 
 Colours exist twice and must be kept in sync by hand:

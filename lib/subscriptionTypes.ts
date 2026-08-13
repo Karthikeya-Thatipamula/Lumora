@@ -1,12 +1,35 @@
+import type { Doc } from '@/convex/_generated/dataModel';
+import type { Frequency, SubscriptionStatus } from '@/convex/domain';
+
 /**
  * Shared subscription vocabulary.
  *
  * Lives in `lib/` rather than inside the create/edit modal so that pure logic
  * (`lib/csvImport.ts`, the test suite) can import it without pulling in React Native.
- * The modal re-exports these for the screens that already import from it.
+ *
+ * `Frequency` and `SubscriptionStatus` are re-exported from `convex/domain.ts`, where
+ * they are derived from the Convex validators. Declaring them here as well is what let
+ * the client and the database drift apart in the first place.
  */
 
-export type Frequency = 'Monthly' | 'Yearly';
+export type { Frequency, SubscriptionStatus };
+
+/**
+ * A subscription as the app sees it: the stored document with Convex's bookkeeping
+ * fields swapped for a plain `id`.
+ *
+ * Derived from `Doc<'subscriptions'>`, so `convex/schema.ts` is the single source of
+ * truth. Add a field to the schema and every consumer gains it; remove one and every
+ * consumer fails to compile. The hand-written version of this type had already grown a
+ * `frequency` field with no database counterpart.
+ *
+ * `id` stays a plain `string` rather than `Id<'subscriptions'>`. Branding it would ripple
+ * into `simulateCancellations`, `useLocalSearchParams` and every test fixture for no
+ * safety the casts at the mutation boundary do not already provide.
+ */
+export type Subscription = Omit<Doc<'subscriptions'>, '_id' | '_creationTime' | 'userId'> & {
+    id: string;
+};
 
 export type Category =
     'Entertainment' | 'AI Tools' | 'Developer Tools' | 'Design' | 'Productivity' | 'Other';
@@ -19,6 +42,26 @@ export const CATEGORIES: Category[] = [
     'Productivity',
     'Other',
 ];
+
+/**
+ * Narrows a stored category string to one the UI understands.
+ *
+ * The database keeps `category` as a free string on purpose (see convex/domain.ts), so
+ * every read boundary needs this rather than a cast. `as Category` on the detail screen
+ * was a lie that happened to hold.
+ */
+export function toCategory(raw: string | undefined): Category {
+    if (!raw) return 'Other';
+    return (
+        CATEGORIES.find((category) => category.toLowerCase() === raw.trim().toLowerCase()) ??
+        'Other'
+    );
+}
+
+/** Narrows a stored billing string. Anything unrecognised bills monthly, never annually. */
+export function toFrequency(raw: string | undefined): Frequency {
+    return raw?.trim().toLowerCase() === 'yearly' ? 'Yearly' : 'Monthly';
+}
 
 export const CATEGORY_COLORS: Record<Category, string> = {
     Entertainment: '#ff6b6b',
@@ -54,5 +97,5 @@ export interface SubscriptionFormValues {
      * Only set by CSV import, which has to be able to bring a cancelled or paused
      * subscription back as it was. Everything created in the app starts active.
      */
-    status?: 'active' | 'paused' | 'cancelled';
+    status?: SubscriptionStatus;
 }

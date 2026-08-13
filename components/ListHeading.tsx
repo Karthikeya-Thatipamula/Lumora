@@ -1,5 +1,10 @@
 import { View, Text, TouchableOpacity } from 'react-native';
 
+interface ListHeadingProps {
+    title: string;
+    onActionPress?: () => void;
+}
+
 const ListHeading = ({ title, onActionPress }: ListHeadingProps) => {
     return (
         <View className="list-head">

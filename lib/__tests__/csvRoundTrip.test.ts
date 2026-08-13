@@ -1,3 +1,4 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import { buildSubscriptionsCsv } from '@/lib/csv';
 import { parseSubscriptionsCsv } from '@/lib/csvImport';
 

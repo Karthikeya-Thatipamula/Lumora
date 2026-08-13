@@ -1,3 +1,4 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import AnimatedNumber from '@/components/motion/AnimatedNumber';
 import { LabelWithInfo } from '@/components/motion/InfoTooltip';
 import PressableScale from '@/components/motion/PressableScale';

@@ -1,3 +1,4 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import { alertDialog } from '@/lib/dialogs';
 import { CategoryBreakdownEntry } from '@/lib/insights';
 import { formatCurrency } from '@/lib/utils';

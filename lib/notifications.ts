@@ -1,3 +1,4 @@
+import type { Subscription } from '@/lib/subscriptionTypes';
 import { formatCurrency } from '@/lib/utils';
 import dayjs from 'dayjs';
 import Constants from 'expo-constants';
