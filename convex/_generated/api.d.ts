@@ -9,6 +9,9 @@
  */
 
 import type * as domain from "../domain.js";
+import type * as entitlements from "../entitlements.js";
+import type * as http from "../http.js";
+import type * as limits from "../limits.js";
 import type * as migrations from "../migrations.js";
 import type * as model from "../model.js";
 import type * as subscriptions from "../subscriptions.js";
@@ -23,6 +26,9 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   domain: typeof domain;
+  entitlements: typeof entitlements;
+  http: typeof http;
+  limits: typeof limits;
   migrations: typeof migrations;
   model: typeof model;
   subscriptions: typeof subscriptions;

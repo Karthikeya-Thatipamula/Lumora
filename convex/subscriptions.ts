@@ -1,13 +1,13 @@
 import { v } from 'convex/values';
 import { mutation, query } from './_generated/server';
 import { frequencyValidator, statusValidator } from './domain';
-import { requireUserId } from './model';
+import { MAX_IMPORT_BATCH, MAX_SUBSCRIPTIONS_PER_USER } from './limits';
+import { freeLimitError, getHeadroom, requireUserId } from './model';
 import {
     assertValidDate,
     assertValidName,
     assertValidPrice,
     assertValidReminderDays,
-    MAX_SUBSCRIPTIONS_PER_USER,
     normalizeCurrency,
     normalizeHouseholdSize,
     normalizeText,
@@ -69,15 +69,14 @@ export const create = mutation({
         assertValidDate(args.trialEndsAt, 'Trial end date');
         const currency = normalizeCurrency(args.currency);
 
-        // Bounded so a looping client can't fill the table for this user. We only need to
-        // know whether the cap is reached, so probe one past it rather than reading every
-        // document the user owns — a 100-row CSV import used to cost ~50,000 reads here.
-        const existing = await ctx.db
-            .query('subscriptions')
-            .withIndex('by_user', (q) => q.eq('userId', userId))
-            .take(MAX_SUBSCRIPTIONS_PER_USER + 1);
-        if (existing.length >= MAX_SUBSCRIPTIONS_PER_USER) {
+        // The free-plan limit is enforced here, not on the client. It used to be checked
+        // at a single screen, and CSV import bypassed it entirely.
+        const headroom = await getHeadroom(ctx, userId, 1);
+        if (headroom.rejectedForCeiling > 0) {
             throw new Error(`You can track up to ${MAX_SUBSCRIPTIONS_PER_USER} subscriptions.`);
+        }
+        if (headroom.accepted < 1) {
+            throw freeLimitError(headroom);
         }
 
         const now = new Date().toISOString();
@@ -96,6 +95,97 @@ export const create = mutation({
             statusChangedAt: now,
             priceHistory: [{ price: args.price, changedAt: now }],
         });
+    },
+});
+
+/** One importable row. Same shape as `create`, minus the fields the server derives. */
+const importRowValidator = v.object({
+    name: v.string(),
+    price: v.number(),
+    billing: frequencyValidator,
+    status: statusValidator,
+    category: v.optional(v.string()),
+    currency: v.optional(v.string()),
+    paymentMethod: v.optional(v.string()),
+    color: v.optional(v.string()),
+    startDate: v.optional(v.string()),
+    renewalDate: v.optional(v.string()),
+    householdSize: v.optional(v.number()),
+});
+
+/**
+ * Imports a batch of subscriptions in one transaction.
+ *
+ * Replaces a client-side loop that called `create` once per row. That loop checked the
+ * plan limit not at all, and re-probed the user's whole table on every iteration — a
+ * hundred-row import against a large account cost roughly fifty thousand document reads.
+ *
+ * Semantics are **partial-accept**, not all-or-nothing. A free user with three active
+ * subscriptions who pastes ten rows gets two written and eight reported back; refusing
+ * the entire file because row nine tipped the limit would be worse. For the same reason
+ * per-row validation is caught inside the handler rather than allowed to throw — an
+ * uncaught error would roll back the transaction and lose the rows that were fine.
+ */
+export const createMany = mutation({
+    args: { rows: v.array(importRowValidator) },
+    handler: async (ctx, { rows }) => {
+        const userId = await requireUserId(ctx);
+
+        if (rows.length > MAX_IMPORT_BATCH) {
+            throw new Error(`Import up to ${MAX_IMPORT_BATCH} subscriptions at a time.`);
+        }
+
+        // One probe for the whole batch, rather than a race-able check per row.
+        const headroom = await getHeadroom(ctx, userId, rows.length);
+
+        const failed: { name: string; reason: string }[] = [];
+        let imported = 0;
+        const now = new Date().toISOString();
+
+        for (const [index, row] of rows.entries()) {
+            if (index >= headroom.accepted) {
+                failed.push({
+                    name: row.name,
+                    reason:
+                        headroom.limit === null
+                            ? `Over the ${MAX_SUBSCRIPTIONS_PER_USER}-subscription ceiling`
+                            : 'free_limit',
+                });
+                continue;
+            }
+
+            try {
+                const name = assertValidName(row.name);
+                assertValidPrice(row.price);
+                assertValidDate(row.startDate, 'Start date');
+                assertValidDate(row.renewalDate, 'Renewal date');
+
+                await ctx.db.insert('subscriptions', {
+                    ...row,
+                    name: name!,
+                    currency: normalizeCurrency(row.currency),
+                    category: normalizeText(row.category),
+                    paymentMethod: normalizeText(row.paymentMethod),
+                    householdSize: normalizeHouseholdSize(row.householdSize) ?? 1,
+                    userId,
+                    statusChangedAt: now,
+                    priceHistory: [{ price: row.price, changedAt: now }],
+                });
+                imported += 1;
+            } catch (error) {
+                failed.push({
+                    name: row.name,
+                    reason: error instanceof Error ? error.message : 'Could not be imported',
+                });
+            }
+        }
+
+        return {
+            imported,
+            failed,
+            rejectedForLimit: headroom.rejectedForLimit,
+            limit: headroom.limit,
+        };
     },
 });
 

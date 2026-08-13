@@ -90,7 +90,30 @@ stale build, a retried mutation or a hand-crafted call can all put bad values in
 - `@convex-dev/eslint-plugin` enforces argument validators and explicit table ids.
 
 Anything the client checks for UX reasons must also be checked here, or it is not
-enforced. That is a live gap for the free-tier subscription limit.
+enforced.
+
+### Plan limits
+
+The free-tier limit is enforced by `getHeadroom` in `convex/model.ts`, not by the client.
+It was previously a client-only constant checked at a single screen, and CSV import
+skipped it entirely.
+
+Convex cannot ask the client whether it is Pro — a mutation argument is
+attacker-controlled. Instead the `entitlements` table mirrors RevenueCat, written only by
+the webhook in `convex/http.ts`. An absent row means free, which is the correct default
+for a deployment where RevenueCat is not configured.
+
+Two details worth not rediscovering:
+
+- **`CANCELLATION` does not revoke access.** It means auto-renew was switched off; the
+  user is paid up until `expiration_at_ms`. Every decision goes through `isEntitledAt`,
+  which looks at the expiry and never at the event type.
+- **RevenueCat does not sign its webhooks.** The shared `Authorization` header is the
+  whole security boundary, and sandbox events are rejected unless the deployment opts in —
+  otherwise a TestFlight tester can grant themselves production Pro.
+
+Counting is done with the `by_user_status` compound index and `take(limit + 1)`: six
+document reads regardless of account size, and no denormalised counter to drift.
 
 ### Argument validators are safe to tighten; schema validators are not
 

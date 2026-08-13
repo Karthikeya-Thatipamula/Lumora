@@ -36,6 +36,39 @@ export default defineSchema({
                 }),
             ),
         ),
+    })
+        .index('by_user', ['userId'])
+        // The free-tier limit counts *active* subscriptions, which a plain `by_user`
+        // probe cannot express. This compound index answers it exactly, in six reads,
+        // with none of the drift surface a denormalised counter would add.
+        .index('by_user_status', ['userId', 'status']),
+
+    /**
+     * RevenueCat's view of who is Pro, mirrored so the server can enforce plan limits.
+     *
+     * The client cannot be asked whether it is Pro — a mutation argument is
+     * attacker-controlled, and anyone with a session could call `create({ isPro: true })`.
+     * The webhook in `convex/http.ts` and the reconcile action in `entitlements.ts` are
+     * the only writers.
+     *
+     * Keyed by the Clerk user id, which is also RevenueCat's `appUserID`, so no mapping
+     * table is needed.
+     */
+    entitlements: defineTable({
+        userId: v.string(),
+        isPro: v.boolean(),
+        productId: v.optional(v.string()),
+        /** Epoch ms. Absent means a non-expiring grant. */
+        expiresAt: v.optional(v.number()),
+        store: v.optional(v.string()),
+        environment: v.optional(v.string()),
+        /**
+         * The source event's timestamp, used for ordering. RevenueCat retries for days
+         * and can deliver out of order, so an older event must never overwrite a newer
+         * one.
+         */
+        eventTimestampMs: v.optional(v.number()),
+        updatedAt: v.number(),
     }).index('by_user', ['userId']),
 
     userSettings: defineTable({

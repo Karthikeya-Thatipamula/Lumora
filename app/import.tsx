@@ -57,12 +57,28 @@ const Import = () => {
 
         setIsImporting(true);
         try {
-            const { imported, failed } = await importSubscriptions(
+            const { imported, failed, rejectedForLimit, limit } = await importSubscriptions(
                 result.rows.map((row) => row.values),
             );
-            posthog.capture('subscriptions_imported', { imported, failed: failed.length });
+            posthog.capture('subscriptions_imported', {
+                imported,
+                failed: failed.length,
+                rejected_for_limit: rejectedForLimit,
+            });
 
-            if (failed.length > 0) {
+            // Import used to be the one path that skipped the free-plan check entirely.
+            // Now the server refuses the overflow, so the refusal has to be visible here
+            // rather than looking like a silent partial failure.
+            if (rejectedForLimit > 0) {
+                posthog.capture('import_limit_paywall_shown', { rejected: rejectedForLimit });
+                const seePro = await confirmDialog({
+                    title: `Imported ${imported} of ${result.rows.length}`,
+                    message: `Lumora's free plan tracks up to ${limit} active subscriptions, so ${rejectedForLimit} couldn't be added. Upgrade to Pro for unlimited tracking.`,
+                    confirmText: 'See Pro',
+                    cancelText: 'Not now',
+                });
+                if (seePro) router.push('/paywall');
+            } else if (failed.length > 0) {
                 alertDialog(
                     `Imported ${imported} of ${result.rows.length}`,
                     `${failed.length} couldn't be saved: ${failed

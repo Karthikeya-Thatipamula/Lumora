@@ -6,6 +6,7 @@ import {
     type SubscriptionStatus,
 } from '@/lib/subscriptionTypes';
 import { api } from '@/convex/_generated/api';
+import { MAX_IMPORT_BATCH } from '@/convex/limits';
 import { Doc, Id } from '@/convex/_generated/dataModel';
 import { DEFAULT_CURRENCY } from '@/lib/currency';
 import { cancelAllRemindersFor } from '@/lib/notifications';
@@ -75,6 +76,7 @@ export function useSubscriptions() {
     const isLoading = isAuthResolving || (canQuery && docs === undefined);
 
     const createMutation = useMutation(api.subscriptions.create);
+    const createManyMutation = useMutation(api.subscriptions.createMany);
     const updateMutation = useMutation(api.subscriptions.update);
     const setStatusMutation = useMutation(api.subscriptions.setStatus);
     const endTrialMutation = useMutation(api.subscriptions.endTrial);
@@ -190,28 +192,61 @@ export function useSubscriptions() {
     };
 
     /**
-     * Adds many subscriptions in one go, for CSV import. Runs sequentially rather than
-     * with Promise.all so a mid-import failure leaves a knowable number written rather
-     * than an arbitrary interleaving, and reports exactly which rows failed.
+     * Adds many subscriptions in one go, for CSV import.
+     *
+     * One mutation per chunk rather than one per row. The old loop called `create`
+     * individually, which re-probed the user's whole table every iteration and — more
+     * importantly — never checked the free-plan limit, so this was the path around the
+     * paywall. The server now decides how many rows fit and reports the rest.
      */
     const importSubscriptions = async (rows: SubscriptionFormValues[]) => {
         assertAuthenticated();
+
         const failed: { name: string; reason: string }[] = [];
         let imported = 0;
+        let rejectedForLimit = 0;
+        let limit: number | null = null;
 
-        for (const row of rows) {
+        for (let start = 0; start < rows.length; start += MAX_IMPORT_BATCH) {
+            const chunk = rows.slice(start, start + MAX_IMPORT_BATCH);
+            const now = dayjs();
+
             try {
-                await createSubscription(row);
-                imported += 1;
-            } catch (error) {
-                failed.push({
-                    name: row.name,
-                    reason: error instanceof Error ? error.message : 'Unknown error',
+                const result = await createManyMutation({
+                    rows: chunk.map((row) => {
+                        const trialEnd = row.isTrial
+                            ? now.add(row.trialDays ?? DEFAULT_TRIAL_DAYS, 'day')
+                            : null;
+                        return {
+                            name: row.name,
+                            price: row.price,
+                            billing: row.frequency,
+                            status: row.status ?? 'active',
+                            category: row.category,
+                            currency: row.currency ?? DEFAULT_CURRENCY,
+                            paymentMethod: row.paymentMethod,
+                            color: CATEGORY_COLORS[row.category],
+                            startDate: now.toISOString(),
+                            renewalDate: (
+                                trialEnd ?? nextRenewalDate(row.frequency, now)
+                            ).toISOString(),
+                            householdSize: row.householdSize ?? 1,
+                        };
+                    }),
                 });
+
+                imported += result.imported;
+                failed.push(...result.failed);
+                rejectedForLimit += result.rejectedForLimit;
+                limit = result.limit;
+            } catch (error) {
+                // A whole chunk failing is a transport or auth problem, not a bad row.
+                const reason = error instanceof Error ? error.message : 'Unknown error';
+                failed.push(...chunk.map((row) => ({ name: row.name, reason })));
             }
         }
 
-        return { imported, failed };
+        return { imported, failed, rejectedForLimit, limit };
     };
 
     return {

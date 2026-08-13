@@ -2,8 +2,12 @@ import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import Purchases, { CustomerInfo } from 'react-native-purchases';
 
-export const PRO_ENTITLEMENT_ID = 'pro';
-export const FREE_SUBSCRIPTION_LIMIT = 5;
+// Re-exported from the server so the limit exists exactly once. It used to be defined
+// here, client-side only, which is what made it bypassable.
+import { FREE_ACTIVE_SUBSCRIPTION_LIMIT, PRO_ENTITLEMENT_ID } from '@/convex/limits';
+
+export { PRO_ENTITLEMENT_ID };
+export const FREE_SUBSCRIPTION_LIMIT = FREE_ACTIVE_SUBSCRIPTION_LIMIT;
 
 const isExpoGo = Constants.appOwnership === 'expo';
 
