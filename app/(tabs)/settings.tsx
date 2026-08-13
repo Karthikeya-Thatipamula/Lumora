@@ -1,3 +1,4 @@
+import { reportError } from '@/lib/monitoring';
 import { useThemeColors } from '@/lib/useThemeColors';
 import { useDisplayName } from '@/lib/useDisplayName';
 import { SafeAreaView } from '@/components/SafeAreaView';
@@ -157,18 +158,29 @@ const Settings = () => {
         if (!confirmed) return;
 
         setIsDeletingAccount(true);
+
+        // The two steps are not atomic, and which one failed changes what is true. The
+        // catch used to claim "Nothing partial was left behind" either way — a flat lie
+        // when the data was already gone and only the account remained.
+        let dataDeleted = false;
         try {
             await deleteAllUserData({});
+            dataDeleted = true;
+
             posthog.capture('account_deleted');
             posthog.reset();
             await user?.delete();
             // Clerk's delete ends the session, so the root layout routes back to auth.
         } catch (error) {
             console.error('Account deletion failed:', error);
+            reportError(error, { step: dataDeleted ? 'clerk-delete' : 'convex-delete' });
             setIsDeletingAccount(false);
+
             alertDialog(
                 'Deletion failed',
-                'We couldn’t complete the deletion. Nothing partial was left behind — please try again, or contact support if it keeps failing.',
+                dataDeleted
+                    ? 'Your subscriptions and settings have been erased, but we couldn’t close your Lumora account itself. Your data is gone and will not come back. Please try again to finish closing the account, or contact support.'
+                    : 'We couldn’t erase your data, so nothing was deleted and your account is unchanged. Please try again, or contact support if it keeps failing.',
             );
         }
     };

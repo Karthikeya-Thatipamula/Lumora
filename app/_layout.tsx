@@ -210,7 +210,12 @@ function RootLayoutContent() {
             });
             previousPathname.current = pathname;
         }
-    }, [pathname, params, authLoaded, isSignedIn]);
+        // `params` is excluded deliberately. useGlobalSearchParams() returns a fresh
+        // object every render, so including it meant this effect body ran on every
+        // single render — the ref guard stopped it doing anything, but it still rebuilt
+        // the sanitised param map each time. Navigation is what should trigger this.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [pathname, authLoaded, isSignedIn]);
 
     const [fontsLoaded] = useFonts({
         'sans-regular': require('../assets/fonts/PlusJakartaSans-Regular.ttf'),

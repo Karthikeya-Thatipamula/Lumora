@@ -51,12 +51,22 @@ const Subscriptions = () => {
         });
     }, [isLoading, posthog, subscriptions.length]);
 
+    // Undebounced, this fired once per keystroke — typing "Netflix" sent seven events —
+    // and each carried the raw query, which is user input and has no business in an
+    // analytics property. The root layout allow-lists route params for the same reason.
     useEffect(() => {
-        if (!searchQuery.trim()) return;
-        posthog.capture('subscriptions_searched', {
-            search_query: searchQuery,
-            result_count: visibleSubscriptions.length,
-        });
+        const trimmed = searchQuery.trim();
+        if (!trimmed) return;
+
+        const timer = setTimeout(() => {
+            posthog.capture('subscriptions_searched', {
+                query_length: trimmed.length,
+                result_count: visibleSubscriptions.length,
+                found_something: visibleSubscriptions.length > 0,
+            });
+        }, 600);
+
+        return () => clearTimeout(timer);
     }, [searchQuery, visibleSubscriptions.length, posthog]);
 
     const handleSubscriptionPress = (id: string) => {

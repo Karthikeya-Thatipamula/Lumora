@@ -59,14 +59,18 @@ export default function App() {
     const { isPro } = useProStatus();
     const { currency } = useUserSettings();
 
-    // Track page view once data has loaded
+    const activeCount = subscriptions.filter((s) => s.status === 'active').length;
+
+    // Keyed on the counts, not the array: a Convex live query hands back a new array on
+    // every push, so depending on it re-fired this "screen viewed" event on every add,
+    // edit and delete and inflated the funnel.
     useEffect(() => {
         if (isLoading) return;
         posthog.capture('home_screen_viewed', {
             total_subscriptions: subscriptions.length,
-            active_subscriptions: subscriptions.filter((s) => s.status === 'active').length,
+            active_subscriptions: activeCount,
         });
-    }, [isLoading, posthog, subscriptions]);
+    }, [isLoading, posthog, subscriptions.length, activeCount]);
 
     const upcomingSubscriptions = useMemo(
         () => getUpcomingRenewals(subscriptions, 7),
@@ -84,13 +88,16 @@ export default function App() {
         [subscriptions, dismissedGroups],
     );
 
+    // Same reason: endingTrials is a fresh array out of useMemo on every subscriptions
+    // change, so this alert event re-fired whenever anything at all was edited.
+    const soonestTrialCharge = endingTrials[0]?.daysUntilCharge ?? null;
     useEffect(() => {
         if (isLoading || endingTrials.length === 0) return;
         posthog.capture('trial_alert_shown', {
             trial_count: endingTrials.length,
-            soonest_days_until_charge: endingTrials[0].daysUntilCharge,
+            soonest_days_until_charge: soonestTrialCharge,
         });
-    }, [isLoading, endingTrials, posthog]);
+    }, [isLoading, posthog, endingTrials.length, soonestTrialCharge]);
 
     const handleSubscriptionPress = (item: Subscription) => {
         const isExpanding = expandedSubscriptionId !== item.id;
@@ -131,8 +138,6 @@ export default function App() {
             alertDialog('Delete failed', RETRY_WHEN_LOADED);
         }
     };
-
-    const activeCount = subscriptions.filter((s) => s.status === 'active').length;
 
     const handleAddModalOpen = async () => {
         if (!isPro && activeCount >= FREE_SUBSCRIPTION_LIMIT) {

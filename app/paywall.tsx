@@ -1,3 +1,4 @@
+import { alertDialog } from '@/lib/dialogs';
 import { SafeAreaView } from '@/components/SafeAreaView';
 import { safeBack } from '@/lib/navigation';
 import { isPurchasesConfigured } from '@/lib/purchases';
@@ -41,10 +42,21 @@ export default function Paywall() {
                 safeBack(router);
             }}
             onRestoreCompleted={({ customerInfo }) => {
+                const restoredSomething = Object.keys(customerInfo.entitlements.active).length > 0;
                 posthog.capture('pro_restore_completed', {
-                    has_entitlements: Object.keys(customerInfo.entitlements.active).length > 0,
+                    has_entitlements: restoredSomething,
                 });
-                safeBack(router);
+
+                // Dismissing unconditionally sent a user with nothing to restore straight
+                // back to a still-locked screen, with no explanation of what happened.
+                if (restoredSomething) {
+                    safeBack(router);
+                    return;
+                }
+                alertDialog(
+                    'Nothing to restore',
+                    'We couldn’t find a previous purchase on this account. If you bought Pro with a different account, sign in with that one and try again.',
+                );
             }}
         />
     );
