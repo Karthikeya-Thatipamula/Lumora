@@ -1,6 +1,8 @@
 import { SafeAreaView } from '@/components/SafeAreaView';
 import { isMissingConvexFunctionError } from '@/lib/convexErrors';
+import { reportError } from '@/lib/monitoring';
 import type { ErrorBoundaryProps } from 'expo-router';
+import { useEffect } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 
 /**
@@ -10,6 +12,13 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
  */
 export default function RouteErrorBoundary({ error, retry }: ErrorBoundaryProps) {
     const isBackendMissing = isMissingConvexFunctionError(error);
+
+    // A missing Convex deployment is a local setup problem, not a defect — reporting it
+    // would bury real crashes under noise from anyone running the app without a backend.
+    useEffect(() => {
+        if (isBackendMissing) return;
+        reportError(error, { boundary: 'route' });
+    }, [error, isBackendMissing]);
 
     return (
         <SafeAreaView className="flex-1 bg-background">

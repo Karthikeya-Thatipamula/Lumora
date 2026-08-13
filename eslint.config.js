@@ -111,6 +111,11 @@ module.exports = defineConfig([
 
     {
         files: ['**/__tests__/**/*.{ts,tsx}', '**/*.test.{ts,tsx}', 'jest.setup.js'],
+        rules: {
+            // Re-importing after jest.resetModules() is the only way to exercise a module
+            // that reads process.env at load time, and a static import cannot express it.
+            '@typescript-eslint/no-require-imports': 'off',
+        },
         languageOptions: {
             globals: {
                 afterAll: 'readonly',

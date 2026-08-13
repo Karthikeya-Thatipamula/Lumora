@@ -1,4 +1,5 @@
 import '@/global.css';
+import { identifyForMonitoring, initMonitoring } from '@/lib/monitoring';
 import { configurePurchases } from '@/lib/purchases';
 import { useThemePreference } from '@/lib/useThemePreference';
 import { useUserSettings } from '@/lib/useUserSettings';
@@ -14,6 +15,10 @@ import { useEffect, useRef } from 'react';
 import { ActivityIndicator, ScrollView, Text, View } from 'react-native';
 
 SplashScreen.preventAutoHideAsync();
+
+// At module scope so a crash during the first render is still captured. Inert without
+// EXPO_PUBLIC_SENTRY_DSN.
+initMonitoring();
 
 // Catches render-time crashes anywhere in the route tree and shows a retryable
 // screen instead of unmounting to a blank page.
@@ -169,12 +174,14 @@ function RootLayoutContent() {
             // Only identify if user has changed
             if (previousUserId.current !== userId) {
                 posthog.identify(userId);
+                identifyForMonitoring(userId);
                 configurePurchases(userId);
                 previousUserId.current = userId;
             }
         } else if (authLoaded && !isSignedIn && previousUserId.current) {
             // User signed out, reset PostHog
             posthog.reset();
+            identifyForMonitoring(undefined);
             previousUserId.current = undefined;
         }
     }, [authLoaded, isSignedIn, userId]);

@@ -8,6 +8,17 @@
 const easProjectId = process.env.EAS_PROJECT_ID;
 const expoOwner = process.env.EXPO_OWNER;
 
+// The Sentry plugin's only job is uploading source maps at build time, which needs an
+// org, a project and an auth token. Without them it would fail the build, so the plugin
+// is only added once they exist — the SDK itself is configured separately at runtime in
+// lib/monitoring.ts and stays inert without a DSN.
+const sentryOrg = process.env.SENTRY_ORG;
+const sentryProject = process.env.SENTRY_PROJECT;
+const sentryPlugins =
+    sentryOrg && sentryProject
+        ? [['@sentry/react-native', { organization: sentryOrg, project: sentryProject }]]
+        : [];
+
 module.exports = {
     expo: {
         name: 'Lumora',
@@ -80,6 +91,7 @@ module.exports = {
                     color: '#ea7a53',
                 },
             ],
+            ...sentryPlugins,
         ],
         experiments: {
             typedRoutes: true,
