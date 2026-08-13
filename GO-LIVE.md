@@ -200,10 +200,15 @@ serves the first one, which most manual trackers do not.
 
 ## Known gaps, deliberately deferred
 
-| Gap                                 | Why it is acceptable for v1                  | When to fix                      |
-| ----------------------------------- | -------------------------------------------- | -------------------------------- |
-| No crash reporting                  | Error boundary degrades gracefully           | Before meaningful scale          |
-| No home-screen widget               | Needs native modules, not Expo Go compatible | v1.1+                            |
-| No shared/household workspace       | Requires multi-user backend design           | v1.2                             |
-| Trial/renewal data is self-reported | Deliberate — it is the privacy position      | Never                            |
-| No automated UI tests               | Logic is covered; UI verified manually       | Add Maestro if regressions recur |
+| Gap                                 | Why it is acceptable for v1                  | When to fix |
+| ----------------------------------- | -------------------------------------------- | ----------- |
+| No home-screen widget               | Needs native modules, not Expo Go compatible | v1.1+       |
+| No shared/household workspace       | Requires multi-user backend design           | v1.2        |
+| Trial/renewal data is self-reported | Deliberate — it is the privacy position      | Never       |
+
+Two entries have since been closed. Crash reporting is wired up via Sentry in
+`lib/monitoring.ts` — it needs `EXPO_PUBLIC_SENTRY_DSN`, `SENTRY_ORG` and `SENTRY_PROJECT`
+set before it does anything, so **add those to the EAS secrets before the first production
+build** or crashes will still go unreported. UI tests now exist: RNTL component tests in
+`__tests__/` folders, and Maestro flows in `.maestro/` running nightly against a preview
+build.

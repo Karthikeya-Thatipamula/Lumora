@@ -223,28 +223,44 @@ easing maths lives in `lib/animation.ts` so it stays unit-testable.
 ## Verifying a change
 
 ```bash
-npm run verify        # lint + typecheck + interop guard + logic tests
+npm run verify   # format:check → lint → typecheck → interop guard → tests
 ```
 
-Individually:
-
-```bash
-npm run lint
-npx tsc --noEmit
-npm run check:interop # catches className passed to unregistered components
-npm run test:logic    # 242 assertions over the pure logic modules
-```
-
-`test:logic` stages the React-free modules with their `@/` imports rewritten, compiles them
-with `tsc --strict`, and runs them under plain node — no test runner, no native mocks. The
-suite lives in `scripts/logic-tests/run.ts`.
+This is the gate. It runs on push via a git hook and in CI on every pull request.
 
 ## Scripts
 
 ```bash
-npm run lint            # expo lint
+npm start               # Expo dev server
+npm run android         # …on an Android device or emulator
+npm run ios             # …on an iOS simulator
+npm run web             # …in a browser
+
+npm run format          # Prettier, write
+npm run format:check    # Prettier, check only (what CI runs)
+npm run lint            # ESLint, zero warnings tolerated
+npm run lint:fix        # ESLint with --fix
+npm run typecheck       # tsc --noEmit
 npm run check:interop   # catches className passed to unregistered components
-npx tsc --noEmit        # typecheck
+npm run test            # Jest
+npm run test:watch      # Jest in watch mode
+npm run test:ci         # Jest with coverage, for CI
+
+npm run verify          # all of the check steps above, in order
+```
+
+### Tests
+
+Unit and component tests are Jest with `jest-expo` and `@testing-library/react-native`,
+colocated in `__tests__/` folders. The domain-logic suite in `lib/__tests__/logic.test.ts`
+carries 265 assertions over the pure modules.
+
+End-to-end flows are Maestro, in `.maestro/`. They need a real dev-client or release build
+plus a throwaway Clerk account, so they run nightly rather than on pull requests:
+
+```bash
+npx expo run:android    # or run:ios
+maestro test .maestro/
 ```
 
 ## Building for stores
